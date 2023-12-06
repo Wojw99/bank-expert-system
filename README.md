@@ -4,7 +4,8 @@ Instalacja
 2. Zainstalować Node.JS z https://nodejs.org/en
 3. Zainstalować Express.JS za pomocą komendy w wierszu poleceń: npm install express
 4. Zainstalować jsonwebtoken za pomocą komendy: npm install jsonwebtoken
-5. Wejść do folderu z aplikacją i uruchomić serwer za pomocą komendy: node app.js
+5. Zainstalować bodyparser za pomocą komendy: npm i --save body-parser jsonwebtoken
+6. Wejść do folderu z aplikacją i uruchomić serwer za pomocą komendy: node app.js
 
 System predyktuje, czy dany klient banku kwalifikuje się do otrzymania pożyczki/kredytu. <br>
 Zbiór danych: https://www.kaggle.com/datasets/janiobachmann/bank-marketing-dataset
