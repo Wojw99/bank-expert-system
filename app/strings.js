@@ -7,6 +7,11 @@ const strings = {
     userSuccess : 'User registered successfully',
     userRole: 'user',
     adminRole: 'admin',
+    classificationStarted: 'Classification has started',
+    waitingForPythonScript: 'Waiting for python script...',
+    pythonScriptOutput: 'Python script output',
+    pythonScriptExitedWithCode: 'Python script exited with code',
+    pythonScriptExecComplit: 'Python script execution complete'
 };
 
 module.exports = strings
