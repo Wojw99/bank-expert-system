@@ -3,19 +3,14 @@
     <h1>Sign In</h1>
 
     <div id="datesContainer">
-      <label for="date">Wybierz datę: <input type="date" name="" id="date" v-model="date" /></label>
-      <button @click="dateChange">Zmień</button>
+      <label for="date">Login <input name="" id="date" v-model="login" />
+      </label>
+      <br>
+      <label for="date">Password <input type="password" name="" id="date" v-model="password" />
+      </label>
+      <br>
+      <button @click="SignIn">Enter</button>
 
-      <ul>
-        <li v-for="date in dates" :key="date">
-          {{ date }}
-        </li>
-        <li>
-          <router-link class="routerPoint" :to="homePath">
-            Home
-          </router-link>
-        </li>
-      </ul>
     </div>
   </div>
 </template>
@@ -31,8 +26,8 @@ export default {
     };
   },
   methods: {
-    dateChange() {
-      // Your dateChange method logic here
+    SignIn() {
+      // Your SignIn method logic here
     },
   },
 };
