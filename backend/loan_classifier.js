@@ -2,6 +2,7 @@ const fs = require('fs');
 const csv = require('csv-parser');
 const RandomForestClassifier = require('random-forest-classifier').RandomForestClassifier;
 const database = require('./database')
+const config = require('./config');
 
 const { spawn } = require('child_process');
 const strings = require('./strings');
@@ -30,22 +31,32 @@ loanClassifier.relearn = async function (
     min_samples_leaf = 1,
 ) {
     return new Promise((resolve, reject) => {
-        this.hyperparametersTemp = [
-            random_state,
-            n_estimators,
-            max_depth,
-            min_samples_split,
-            min_samples_leaf,
-        ];
+        const paramsArry = [
+          random_state,
+          n_estimators,
+          max_depth,
+          min_samples_split,
+          min_samples_leaf
+        ]
     
         const pythonScriptPath = 'relearn.py';
-        const pythonProcess = spawn('python', [pythonScriptPath, JSON.stringify(this.hyperparametersTemp)]);
+        const pythonProcess = spawn('python', [pythonScriptPath, JSON.stringify(paramsArry)]);
     
-        console.log(`Relearning started with parameters: ${this.hyperparametersTemp}`)
+        console.log(`Relearning started with parameters: ${paramsArry}`)
         console.log(strings.waitingForPythonScript)
     
         pythonProcess.stdout.on('data', (data) => {
             console.log(`${strings.pythonScriptOutput} ${data}`);
+
+            this.hyperparametersTemp = {
+              "random_state" : random_state,
+              "n_estimators" : n_estimators,
+              "max_depth" : max_depth,
+              "min_samples_split" : min_samples_split,
+              "min_samples_leaf" : min_samples_leaf,
+              "accuracy" : parseFloat(data)
+            };
+
             const parsed = JSON.parse(data);
             resolve(parsed);
         });
@@ -62,10 +73,8 @@ loanClassifier.relearn = async function (
 }
 
 loanClassifier.acceptRelearning = function() {
-  console.log("original: ", this.hyperparameters)
   this.hyperparameters = this.hyperparametersTemp
-  console.log("updated: ", this.hyperparameters)
-  database.updateParameters(this.hyperparameters.random_state,this.hyperparameters.n_estimators,this.hyperparameters.max_depth,this.hyperparameters.min_samples_split,this.hyperparameters.min_samples_leaf)
+  database.updateParameters(this.hyperparameters)
 }
 
 loanClassifier.classify = async function(
@@ -75,24 +84,29 @@ loanClassifier.classify = async function(
     day = 13,
     month = 1,
     duration = 555, 
-    campaign = 1
+    education = 1
 ) {
     return new Promise((resolve, reject) => {
     const pythonScriptPath = 'classify.py';
+
+    const jobNum = config.categoryMaps[job]
+    const eduNum = config.categoryMaps[education]
+
     const inputData = [
-        this.hyperparameters[0],
-        this.hyperparameters[1],
-        this.hyperparameters[2],
-        this.hyperparameters[3],
-        this.hyperparameters[4],
+      this.hyperparameters["random_state"],
+      this.hyperparameters["n_estimators"],
+      this.hyperparameters["max_depth"],
+      this.hyperparameters["min_samples_split"],
+      this.hyperparameters["min_samples_leaf"],
         age,
-        job,
+        jobNum,
         balance,
         day,
         month,
         duration,
-        campaign
+        eduNum
     ];
+    
     const pythonProcess = spawn('python', [pythonScriptPath, JSON.stringify(inputData)]);
 
     console.log(strings.classificationStarted)

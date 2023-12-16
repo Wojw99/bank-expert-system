@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser')
-const accessTokenSecret = require('../config');
+const config = require('../config');
 const strings = require('../strings')
 const database = require('../database')
+const accessTokenSecret = config.accessTokenSecret
 
 let users = database.getAllUsers()
 

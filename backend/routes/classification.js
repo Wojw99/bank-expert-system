@@ -15,7 +15,7 @@ router.post('/acceptRelearning', auth.authenticateJWT, async (req, res) => {
 });
 
 router.get('/classify', auth.authenticateJWT, async (req, res) => {
-  var { age, job, balance, day, month, duration, campaign } = req.body;
+  var { age, job, balance, day, month, duration, education } = req.body;
 
   try {
     var prediction = await loanClassifier.classify(
@@ -25,10 +25,11 @@ router.get('/classify', auth.authenticateJWT, async (req, res) => {
       day = day,
       month = month,
       duration = duration, 
-      campaign = campaign
+      education = education
     )
     return res.json({prediction: prediction});
   } catch (error) {
+    console.log(error)
     res.status(500).send('Internal Server Error');
   }
 });
