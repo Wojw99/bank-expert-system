@@ -3,31 +3,68 @@
     <h1>Sign In</h1>
 
     <div id="datesContainer">
-      <label for="date">Login <input name="" id="date" v-model="login" />
-      </label>
-      <br>
-      <label for="date">Password <input type="password" name="" id="date" v-model="password" />
-      </label>
-      <br>
-      <button @click="SignIn">Enter</button>
+      <form @submit.prevent="SignIn">
+        <label for="login">
+          Login <input name="login" id="login" v-model="login" @keyup.enter="SignIn" />
+        </label>
+        <br>
+        <label for="password">
+          Password
+          <input
+            type="password"
+            name="password"
+            id="password"
+            v-model="password"
+            @keyup.enter="SignIn"
+          />
+        </label>
+        <br>
+        <button type="submit">Log In</button>
+      </form>
+      <p v-if="errorMessage" style="color: red;">{{ errorMessage }}</p>
 
+      <div>
+        <p>Don't have an account?</p>
+        <router-link to="/signup">Sign Up</router-link>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
-  name: 'LoginPanel', // Changed the component name
+  name: 'LoginPanel',
   data() {
     return {
-      date: '',
-      dates: [], // Assuming you have this data property defined
-      homePath: '/home', // Assuming you have this data property defined
+      login: '',
+      password: '',
+      errorMessage: '',
     };
   },
   methods: {
-    SignIn() {
-      // Your SignIn method logic here
+    async SignIn() {
+      try {
+        const response = await axios.post(
+          'http://localhost:3000/auth/login',
+          {
+            username: this.login,
+            password: this.password,
+          },
+        );
+
+        // Handle the response as needed
+        console.log('Response:', response.data);
+
+        // Redirect to the home page after successful login
+        this.$router.push('/home');
+      } catch (error) {
+        console.error('Error:', error.message);
+
+        // Update errorMessage to show the error message to the user
+        this.errorMessage = 'Login failed. Please check your credentials and try again.';
+      }
     },
   },
 };
