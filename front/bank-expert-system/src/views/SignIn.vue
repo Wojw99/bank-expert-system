@@ -3,20 +3,25 @@
     <h1>Sign In</h1>
 
     <div id="datesContainer">
-      <form @submit.prevent="SignIn">
+      <form @submit.prevent="signIn">
         <label for="login">
-          Login <input name="login" id="login" v-model="login" @keyup.enter="SignIn" />
+          <span>Login</span>
+          <input name="login" id="login" v-model="login" @keyup.enter="signIn" />
         </label>
         <br>
         <label for="password">
-          Password
+          <span>Password</span>
           <input
-            type="password"
+            :type="showPassword ? 'text' : 'password'"
             name="password"
             id="password"
             v-model="password"
-            @keyup.enter="SignIn"
+            @keyup.enter="signIn"
           />
+          <label for="showPassword">
+            <input type="checkbox" v-model="showPassword" />
+            <span>Show Password</span>
+          </label>
         </label>
         <br>
         <button type="submit">Log In</button>
@@ -25,7 +30,7 @@
 
       <div>
         <p>Don't have an account?</p>
-        <router-link to="/signup">Sign Up</router-link>
+        <router-link to="/signup" class="login-link">Sign Up</router-link>
       </div>
     </div>
   </div>
@@ -35,16 +40,17 @@
 import axios from 'axios';
 
 export default {
-  name: 'LoginPanel',
+  name: 'SignInPanel',
   data() {
     return {
       login: '',
       password: '',
+      showPassword: false,
       errorMessage: '',
     };
   },
   methods: {
-    async SignIn() {
+    async signIn() {
       try {
         const response = await axios.post(
           'http://localhost:3000/auth/login',
@@ -54,11 +60,11 @@ export default {
           },
         );
 
-        // Handle the response as needed
-        console.log('Response:', response.data);
+        // Dispatch the loginUser action with the signed-in user data
+        this.$store.dispatch('loginUser', response.data);
 
-        // Redirect to the home page after successful login
-        this.$router.push('/home');
+        // Redirect to the prediction page after successful login
+        this.$router.push('/prediction');
       } catch (error) {
         console.error('Error:', error.message);
 
@@ -69,3 +75,16 @@ export default {
   },
 };
 </script>
+
+<style scoped lang="scss">
+.login-link {
+  font-weight: bold;
+  color: #2c3e50;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+</style>
