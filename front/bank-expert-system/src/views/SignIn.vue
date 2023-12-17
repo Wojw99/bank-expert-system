@@ -14,13 +14,9 @@
           <br>
           <label for="password">
             <span>Password</span>
-            <input
-              :type="showPassword ? 'text' : 'password'"
-              name="password"
-              id="password"
-              v-model="password"
-              @keyup.enter="signIn"
-            />
+            <input :type="showPassword ? 'text' : 'password'"
+            name="password" id="password" v-model="password"
+              @keyup.enter="signIn" />
             <label for="showPassword">
               <input type="checkbox" v-model="showPassword" />
               <span>Show Password</span>
@@ -49,7 +45,7 @@
 </template>
 
 <script>
-import store from '@/store/store';
+// import store from '@/store/store';
 import axios from 'axios';
 
 export default {
@@ -63,15 +59,15 @@ export default {
     };
   },
   beforeRouteEnter(to, from, next) {
+    next();
+  },
+  beforeRouteLeave(to, from, next) {
     // Check if the user is authenticated
-    const { getters } = store;
-    const { isAuthenticated } = getters; // Use object destructuring here
-
-    // If authenticated, redirect to the prediction page
-    if (isAuthenticated) {
+    if (this.$store.getters.isAuthenticated) {
+      // If authenticated, redirect to the prediction page
       next('/prediction');
     } else {
-      // If not authenticated, proceed with entering the sign-in page
+      // If not authenticated, proceed with leaving the route
       next();
     }
   },
@@ -87,10 +83,16 @@ export default {
         );
 
         // Dispatch the loginUser action with the signed-in user data
-        this.$store.dispatch('loginUser', response.data);
+        await this.$store.dispatch('loginUser', response.data);
 
-        // Redirect to the prediction page after successful login
-        this.$router.push('/prediction');
+        // Check if the user is authenticated after successful login
+        if (this.$store.getters.isAuthenticated) {
+          // Redirect to the prediction page
+          this.$router.push('/prediction');
+        } else {
+          // Handle the case where authentication didn't succeed
+          this.errorMessage = 'Login failed. Please check your credentials and try again.';
+        }
       } catch (error) {
         console.error('Error:', error.message);
 
