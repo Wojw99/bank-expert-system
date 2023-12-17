@@ -21,7 +21,7 @@ database.addUser = function(password, username, role) {
             }
             console.log(`A new user has been added`)
         }
-        )
+    )
 }
 
 database.getAllUsers = function() {
@@ -52,26 +52,25 @@ database.logAllUsers = function() {
     console.log('- - - - - - - - - - -')
 }
 
-database.updateParameters = function(random_state,
-    n_estimators,
-    max_depth,
-    min_samples_split,
-    min_samples_leaf) {
+database.updateParameters = function(hyperparameters) {
+    console.log("store", hyperparameters)
     console.log("STORE", [
-        random_state,
-        n_estimators,
-        max_depth,
-        min_samples_split,
-        min_samples_leaf
+        hyperparameters["random_state"],
+        hyperparameters["n_estimators"],
+        hyperparameters["max_depth"],
+        hyperparameters["min_samples_split"],
+        hyperparameters["min_samples_leaf"],
+        hyperparameters["accuracy"]
     ])
     db.run(
-        'REPLACE INTO parameters (id, random_state, n_estimators, max_depth, min_samples_split, min_samples_leaf) VALUES (1, ?, ?, ?, ?, ?)',
+        'REPLACE INTO parameters (id, random_state, n_estimators, max_depth, min_samples_split, min_samples_leaf, accuracy) VALUES (1, ?, ?, ?, ?, ?, ?)',
         [
-            random_state,
-            n_estimators,
-            max_depth,
-            min_samples_split,
-            min_samples_leaf
+            hyperparameters["random_state"],
+            hyperparameters["n_estimators"],
+            hyperparameters["max_depth"],
+            hyperparameters["min_samples_split"],
+            hyperparameters["min_samples_leaf"],
+            hyperparameters["accuracy"]
         ],
         (error) => {
             if (error) {

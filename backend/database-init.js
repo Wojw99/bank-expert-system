@@ -16,26 +16,29 @@ db.serialize(() => {
     n_estimators INTEGER,
     max_depth INTEGER,
     min_samples_split INTEGER,
-    min_samples_leaf INTEGER
+    min_samples_leaf INTEGER,
+    accuracy REAL
   )
 `);
 
 var hyperparameters = {
   random_state : 42,
-  n_estimators : 60,
-  max_depth : "",
-  min_samples_split : "",
-  min_samples_leaf : ""
+  n_estimators : 55,
+  max_depth : 8,
+  min_samples_split : 4,
+  min_samples_leaf : 4,
+  accuracy: 0.868
 }
 
 db.run(
-  'INSERT OR REPLACE INTO parameters (id, random_state, n_estimators, max_depth, min_samples_split, min_samples_leaf) VALUES (1, ?, ?, ?, ?, ?)',
+  'INSERT OR REPLACE INTO parameters (id, random_state, n_estimators, max_depth, min_samples_split, min_samples_leaf, accuracy) VALUES (1, ?, ?, ?, ?, ?, ?)',
   [
       hyperparameters.random_state,
       hyperparameters.n_estimators,
       hyperparameters.max_depth,
       hyperparameters.min_samples_split,
-      hyperparameters.min_samples_leaf
+      hyperparameters.min_samples_leaf,
+      hyperparameters.accuracy
   ],
 );
 
