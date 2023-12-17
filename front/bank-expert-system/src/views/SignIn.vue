@@ -36,7 +36,7 @@
       <!-- User panel -->
       <template v-else>
         <div class="user-panel">
-          <p>Welcome, {{ $store.state.user.username }}</p>
+          <!-- <p>Welcome, {{ $store.state.user.username }}</p> -->
           <!-- Add any additional user-related content or actions here -->
         </div>
       </template>
@@ -45,7 +45,7 @@
 </template>
 
 <script>
-// import store from '@/store/store';
+import store from '@/store/store';
 import axios from 'axios';
 
 export default {
@@ -59,13 +59,27 @@ export default {
     };
   },
   beforeRouteEnter(to, from, next) {
-    next();
+    // Check if the user is authenticated
+    const { getters } = store;
+    const { isAuthenticated } = getters;
+
+    // If authenticated, redirect to the prediction page
+    if (isAuthenticated) {
+      next('/prediction');
+    } else {
+      // If not authenticated, proceed with entering the sign-in page
+      next();
+    }
   },
+
   beforeRouteLeave(to, from, next) {
     // Check if the user is authenticated
-    if (this.$store.getters.isAuthenticated) {
-      // If authenticated, redirect to the prediction page
-      next('/prediction');
+    const { getters } = store;
+    const { isAuthenticated } = getters;
+
+    // If authenticated, proceed with leaving the route
+    if (isAuthenticated) {
+      next();
     } else {
       // If not authenticated, proceed with leaving the route
       next();
@@ -82,8 +96,10 @@ export default {
           },
         );
 
-        // Dispatch the loginUser action with the signed-in user data
-        await this.$store.dispatch('loginUser', response.data);
+        const { user, token } = response.data;
+
+        // Dispatch the loginUser action with the signed-in user data and token
+        await this.$store.dispatch('loginUser', { user, token });
 
         // Check if the user is authenticated after successful login
         if (this.$store.getters.isAuthenticated) {

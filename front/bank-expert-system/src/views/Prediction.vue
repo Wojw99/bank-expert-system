@@ -4,14 +4,26 @@
 
     <div id="form">
       <div v-for="(details, columnName) in settings" :key="columnName" class="form-row">
-        <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
-        <label :for="getColumnId(columnName)" class="label">{{ columnName }}</label>
+        <label :for="getColumnId(columnName)" class="label">{{ columnName }}
+          <!-- Use a select dropdown for category types -->
+          <select
+          v-if="details.type === 'category'"
+          :id="getColumnId(columnName)"
+          v-model="inputValues[columnName]"
+          class="input"
+        >
+          <option v-for="option in details.posibilities"
+          :key="option" :value="option">{{ option }}</option>
+        </select>
+        <!-- Use the appropriate input type for other types -->
         <input
+          v-else
           :type="getInputType(details)"
           :id="getColumnId(columnName)"
           v-model="inputValues[columnName]"
           class="input"
         />
+        </label>
       </div>
       <br>
       <div class="button-container">
@@ -38,6 +50,19 @@
 button {
   margin-right: 40px;
 }
+
+/* Add styles for browsers that don't support 'appearance' property */
+.input::-webkit-inner-spin-button,
+.input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.input {
+  appearance: none;
+  -moz-appearance: textfield;
+  width: 200px;
+}
+
 </style>
 
 <script>
@@ -72,14 +97,11 @@ export default {
       return `column_${columnName}`;
     },
     getInputType(details) {
-      // Mapping column types to input types
       const columnTypeMap = {
         int: 'number',
         category: 'text',
         date: 'date',
       };
-
-      // Return the corresponding input type or default to 'text'
       return columnTypeMap[details.type] || 'text';
     },
     SignIn() {
@@ -93,13 +115,22 @@ export default {
     setDefaultDateValues() {
       Object.keys(this.settings).forEach((columnName) => {
         if (columnName === 'day') {
-            const currentDay = new Date().getDate();
-            this.inputValues[columnName] = currentDay;
-          } else if (columnName === 'month') {
-            const currentMonth = new Date().getMonth() + 1;
-            this.inputValues[columnName] = currentMonth;
-          }
+          const currentDay = new Date().getDate();
+          this.inputValues[columnName] = currentDay;
+        } else if (columnName === 'month') {
+          // Set default value for the "month" input
+          this.inputValues[columnName] = this.getDefaultMonth();
+        }
       });
+    },
+
+    getDefaultMonth() {
+      // Get the current month as a three-letter abbreviation (e.g., "jan", "feb")
+      const months = [
+        'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec',
+      ];
+      const currentMonth = new Date().getMonth();
+      return months[currentMonth];
     },
   },
 };
