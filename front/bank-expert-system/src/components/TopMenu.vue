@@ -1,21 +1,22 @@
+<!-- TopMenu.vue -->
 <template>
     <div>
         <nav>
-            <!-- Navigation items container -->
-            <div class="navigation-container">
-                <router-link to="/">Home</router-link>
-                <router-link to="/signin">Sign In</router-link>
-                <router-link to="/prediction">Prediction</router-link>
-                <router-link to="/training">Training</router-link>
-            </div>
+            <router-link
+            v-if="!$store.getters.isAuthenticated && !requiresUnauth"
+            to="/">Home</router-link>
+            <router-link
+            v-if="!$store.getters.isAuthenticated"
+            to="/signin">Sign In</router-link>
+            <router-link
+            v-if="$store.getters.isAuthenticated"
+            to="/prediction">Prediction</router-link>
+            <router-link
+            v-if="$store.getters.isAuthenticated"
+            to="/training">Training</router-link>
 
             <!-- Logout button -->
-            <div role="button"
-            tabindex="0" class="logout"
-            v-if="$store.getters.isAuthenticated" @click="logout"
-                @keydown.enter="logout">
-                Log Out
-            </div>
+            <button v-if="$store.getters.isAuthenticated" @click="logout">Log Out</button>
         </nav>
     </div>
 </template>
@@ -31,6 +32,11 @@ export default {
             this.$router.push('/');
         },
     },
+    computed: {
+        requiresUnauth() {
+            return this.$route.meta.requiresUnauth;
+        },
+    },
 };
 </script>
 
@@ -38,45 +44,23 @@ export default {
 nav {
     display: flex;
     justify-content: space-between;
+    /* Space between items, pushing "Log Out" to the right */
     align-items: center;
     padding: 30px;
 }
 
-.navigation-container {
-    display: flex;
-    align-items: center;
-}
-
-a,
-.logout {
+a {
     font-weight: bold;
     color: #2c3e50;
     text-decoration: none;
-    cursor: pointer;
     margin: 0 10px;
-    padding: 8px 12px;
-    /* Add padding for a framed appearance */
-    border: 1px solid #ccc;
-    /* Add a light border */
-    border-radius: 4px;
-    /* Add border-radius for rounded corners */
-
-    &:hover {
-        text-decoration: underline;
-        background-color: #f0f0f0;
-        /* Add a light background color on hover */
-    }
 
     &.router-link-exact-active {
         color: #42b983;
-        background-color: #e0e0e0;
-        /* Add a slightly darker background color for active state */
+    }
+
+    button {
+        margin-left: 10px;
     }
 }
-
-.logout {
-    margin-left: auto;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}</style>
+</style>
