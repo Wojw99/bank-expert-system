@@ -13,10 +13,8 @@
         <li>Max Depth: {{ modelInfo.lastParameters.max_depth }}</li>
         <li>Min Samples Split: {{ modelInfo.lastParameters.min_samples_split }}</li>
         <li>Min Samples Leaf: {{ modelInfo.lastParameters.min_samples_leaf }}</li>
-        <li>
-          Accuracy: <strong>{{ (modelInfo.lastParameters.accuracy * 100).toFixed(2) }}%</strong>
-        </li>
       </ul>
+      <strong>Accuracy: {{ (modelInfo.lastParameters.accuracy * 100).toFixed(2) }}%</strong>
     </div>
 
     <!-- Form to modify hyperparameters -->
@@ -35,15 +33,21 @@
         <label for="min_samples_leaf">Min Samples Leaf:
           <input type="number" id="min_samples_leaf" v-model="newParameters.min_samples_leaf" />
         </label>
-        <button type="submit">Relearn</button>
+        <button @click="relearnModel" :disabled="relearningInProgress">
+          <span v-if="!relearningInProgress">Relearn</span>
+          <span v-else>
+            <img v-if="relearningInProgress" ref="learningBook"
+            src="@/assets/book.gif"
+            alt="Loading" class="learning-book-img" />
+          </span>
+        </button>
       </form>
     </div>
 
     <!-- New Model Information section -->
-    <div v-if="newModelInfo" class="section">
+    <div v-if="newModelInfo" class="section" ref="newModelSection">
       <h2>New Model Information</h2>
       <p>New Model Accuracy: {{ (newModelInfo.accuracy * 100).toFixed(2) }}%</p>
-      <!-- Confirmation question -->
       <p>Do you want to overwrite the model with new hyperparameters?</p>
       <div class="button-container">
         <button class="accept-button" @click="acceptRelearning">Yes, Accept Relearning</button>
@@ -76,9 +80,20 @@ export default {
         min_samples_leaf: null,
       },
       newModelInfo: null,
+      relearningInProgress: false,
     };
   },
   methods: {
+    scrollToBook() {
+      // Wait for 100ms before attempting to scroll
+      setTimeout(() => {
+        // Use object destructuring to access the ref
+        const { learningBook } = this.$refs;
+        if (learningBook) {
+          learningBook.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    },
     async fetchModelInfo() {
       try {
         const response = await fetch('http://localhost:3000/settings/all');
@@ -90,7 +105,10 @@ export default {
     },
     async relearnModel() {
       try {
-        // Retrieve the authentication token from the Vuex store
+        // Disable the "Relearn" button
+        this.relearningInProgress = true;
+        this.scrollToBook();
+
         const token = this.$store.getters.authToken;
         const response = await fetch('http://localhost:3000/classification/relearn', {
           method: 'POST',
@@ -117,6 +135,9 @@ export default {
         }
       } catch (error) {
         console.error('Error relearning model:', error.message);
+      } finally {
+        // Re-enable the "Relearn" button after the relearning process is complete
+        this.relearningInProgress = false;
       }
     },
     async acceptRelearning() {
