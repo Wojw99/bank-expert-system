@@ -24,7 +24,9 @@
         </label>
       </div>
       <div class="button-container">
-        <button @click="SignIn">Enter</button>
+        <button @click="predictLoan">Predict</button>
+        <p v-if="predictionResult === 1">Customer should get a loan.</p>
+        <p v-if="predictionResult === 0">Customer should not get a loan.</p>
         <button @click="clearInputs">Clear All</button>
       </div>
     </div>
@@ -33,6 +35,7 @@
 
 <script>
 import { ref, onMounted } from 'vue';
+import store from '@/store/store';
 
 export default {
   name: 'PredictionPanel',
@@ -40,6 +43,7 @@ export default {
     const settings = ref({});
     const inputValues = ref({});
     const validationErrors = ref({});
+    const predictionResult = ref(null);
 
     const getColumnId = (columnName) => `column_${columnName}`;
 
@@ -127,8 +131,33 @@ export default {
     };
 
     const clearInputs = () => {
-      setDefaultDateValues();
       clearValidationErrors();
+      predictionResult.value = null;
+      Object.keys(inputValues.value).forEach((key) => {
+        inputValues.value[key] = null;
+      });
+    };
+    const predictLoan = async () => {
+      try {
+        const token = store.getters.authToken;
+        const queryParams = new URLSearchParams(inputValues.value);
+        const response = await fetch(`http://localhost:3000/classification/classify?${queryParams}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          predictionResult.value = result.prediction;
+        } else {
+          console.error('Error predicting loan:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error predicting loan:', error.message);
+      }
     };
 
     onMounted(async () => {
@@ -150,8 +179,10 @@ export default {
       handleInput,
       hasValidationError,
       getValidationError,
+      predictLoan,
       SignIn,
       clearInputs,
+      predictionResult,
     };
   },
 };
