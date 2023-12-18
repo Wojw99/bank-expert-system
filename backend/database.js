@@ -1,4 +1,5 @@
 const sqlite3 = require('sqlite3').verbose()
+const strings = require('./strings')
 const db = new sqlite3.Database('./database.db')
 
 database = {};
@@ -20,9 +21,30 @@ database.addUser = function(password, username, role) {
                 return console.error(error.message)
             }
             console.log(`A new user has been added`)
+            let user = {
+                username: username,
+                password: password,
+                role: strings.userRole
+              }
+              database.users.push(user)
         }
     )
 }
+
+database.removeUser = function(username) {
+    db.run(
+        'DELETE FROM users WHERE username = ?',
+        [username],
+        (error) => {
+            if(error) {
+                return console.error(error.message);
+            }
+            console.log(`User ${username} has been removed`);
+            database.users = database.users.filter(user => user.username !== username);
+
+        }
+    );
+};
 
 database.getAllUsers = function() {
     let users = []
@@ -39,6 +61,27 @@ database.getAllUsers = function() {
     return users
 }
 
+database.users = database.getAllUsers()
+
+database.getAllUsersCallback = function(callback) {
+    db.all('SELECT * FROM users', [], (error, rows) => {
+            if (error) {
+                callback(error, null)
+                return;
+            }
+
+            let users = []
+
+            rows.forEach(row => {
+                users.push(row)
+            })
+            callback(null, users)
+
+            return users
+        }
+    );
+}
+
 database.logAllUsers = function() {
     console.log('- - - Users: - - -')
     db.all("SELECT * FROM users", [], (err, rows) => {
@@ -53,15 +96,6 @@ database.logAllUsers = function() {
 }
 
 database.updateParameters = function(hyperparameters) {
-    console.log("store", hyperparameters)
-    console.log("STORE", [
-        hyperparameters["random_state"],
-        hyperparameters["n_estimators"],
-        hyperparameters["max_depth"],
-        hyperparameters["min_samples_split"],
-        hyperparameters["min_samples_leaf"],
-        hyperparameters["accuracy"]
-    ])
     db.run(
         'REPLACE INTO parameters (id, random_state, n_estimators, max_depth, min_samples_split, min_samples_leaf, accuracy) VALUES (1, ?, ?, ?, ?, ?, ?)',
         [

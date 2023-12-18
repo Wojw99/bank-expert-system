@@ -19,8 +19,10 @@ app.use('/settings', settingsRoutes);
 
 // loanClassifier.relearn()
 // loanClassifier.classify()
-database.testDatabase()
+// database.testDatabase()
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
+
+module.exports = app;

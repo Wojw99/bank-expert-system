@@ -124,9 +124,10 @@ loanClassifier.classify = async function(
         reject(new Error('Async operation failed'));
       } else {
         console.log(strings.pythonScriptExecComplit);
+        reject(new Error('Something went wrong?'));
       }
     });
-    })
+  })
 }
 
 module.exports = loanClassifier

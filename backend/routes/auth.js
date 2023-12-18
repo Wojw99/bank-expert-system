@@ -7,12 +7,12 @@ const strings = require('../strings')
 const database = require('../database')
 const accessTokenSecret = config.accessTokenSecret
 
-let users = database.getAllUsers()
+// let users = database.getAllUsers()
 
 router.post('/login', (req, res) => {
     const { username, password } = req.body;
 
-    const user = users.find(user => user.username === username);
+    const user = database.users.find(user => user.username === username);
     if (user && user.password === password) {
       const token = jwt.sign({ username: username, role: user.role }, accessTokenSecret, { expiresIn: '1h' });
   
@@ -25,21 +25,15 @@ router.post('/login', (req, res) => {
 router.post('/register', (req, res) => {
     const { username, password } = req.body;
 
-    if (users.find(user => user.username === username)) {
-      return res.status(400).json({ message: strings.userExists });
-    }
-  
-    let user = {
-      username: username,
-      password: password,
-      role: strings.userRole
-    }
-    users.push(user)
-
-    database.addUser(password, username, strings.userRole)
-    database.logAllUsers()
-  
-    res.status(201).json({ message: strings.userSuccess });  
+    database.getAllUsersCallback((error, users) => {
+      if (users && users.find(user => user.username === username)) {
+        return res.status(400).json({ message: strings.userExists });
+      } else if (error || users === null) {
+        return res.status(500).json({ message: strings.internalError });
+      }
+      database.addUser(password, username, strings.userRole)
+      return res.status(201).json({ message: strings.userSuccess });  
+    })
 });
 
 router.authenticateJWT = (req, res, next) => {

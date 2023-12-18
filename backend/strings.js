@@ -3,6 +3,7 @@ const strings = {
     authTokenIvalid : 'Error 403: Invalid authorization token',
     invalidCredentials : 'Invalid credentials',
     unauthorized : 'Error 401: Unauthorized',
+    internalError : 'Error 500: Internal Server Error',
     userExists : 'User already exists',
     userSuccess : 'User registered successfully',
     userRole: 'user',
