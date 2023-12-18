@@ -5,27 +5,24 @@
     <div id="form">
       <div v-for="(details, columnName) in settings" :key="columnName" class="form-row">
         <label :for="getColumnId(columnName)" class="label">{{ columnName }}
-          <!-- Use a select dropdown for category types -->
-          <select
-          v-if="details.type === 'category'"
-          :id="getColumnId(columnName)"
-          v-model="inputValues[columnName]"
-          class="input"
-        >
-          <option v-for="option in details.posibilities"
-          :key="option" :value="option">{{ option }}</option>
-        </select>
-        <!-- Use the appropriate input type for other types -->
-        <input
-          v-else
-          :type="getInputType(details)"
-          :id="getColumnId(columnName)"
-          v-model="inputValues[columnName]"
-          class="input"
-        />
+          <template v-if="details.type === 'category'">
+            <select :id="getColumnId(columnName)"
+            v-model="inputValues[columnName]" class="input">
+              <option v-for="option in details.posibilities"
+              :key="option" :value="option">{{ option }}</option>
+            </select>
+          </template>
+          <template v-else>
+            <input :type="getInputType(details)"
+            :id="getColumnId(columnName)" v-model="inputValues[columnName]"
+              class="input" @input="handleInput(columnName)" />
+            <!-- Display validation alert if there's an error -->
+            <p v-if="hasValidationError(columnName)" class="error-text">
+              {{ getValidationError(columnName) }}
+            </p>
+          </template>
         </label>
       </div>
-      <br>
       <div class="button-container">
         <button @click="SignIn">Enter</button>
         <button @click="clearInputs">Clear All</button>
@@ -33,6 +30,133 @@
     </div>
   </div>
 </template>
+
+<script>
+import { ref, onMounted } from 'vue';
+
+export default {
+  name: 'PredictionPanel',
+  setup() {
+    const settings = ref({});
+    const inputValues = ref({});
+    const validationErrors = ref({});
+
+    const getColumnId = (columnName) => `column_${columnName}`;
+
+    const getInputType = (details) => {
+      const columnTypeMap = {
+        int: 'number',
+        category: 'text',
+        date: 'date',
+      };
+      return columnTypeMap[details.type] || 'text';
+    };
+
+    const validateInput = (columnName) => {
+      const value = inputValues.value[columnName];
+      const details = settings.value[columnName];
+      const errors = [];
+
+      if (details && details.type === 'int') {
+        const isInteger = /^\d+$/.test(value);
+
+        if (!isInteger) {
+          errors.push('Please enter a valid integer value.');
+        } else {
+          const minValue = details.min;
+          const maxValue = details.max;
+
+          if (minValue !== null && parseInt(value, 10) < parseInt(minValue, 10)) {
+            errors.push(`Value should be greater than or equal to ${minValue}.`);
+          }
+          if (maxValue !== null && parseInt(value, 10) > parseInt(maxValue, 10)) {
+            errors.push(`Value should be less than or equal to ${maxValue}.`);
+          }
+        }
+      }
+
+      // Update validation errors for the current column
+      validationErrors.value = {
+        ...validationErrors.value,
+        [columnName]: errors,
+      };
+
+      // Clear validation errors for other columns
+      Object.keys(settings.value).forEach((name) => {
+        if (name !== columnName) {
+          validationErrors.value = {
+            ...validationErrors.value,
+            [name]: [],
+          };
+        }
+      });
+    };
+
+    const handleInput = (columnName) => {
+      validateInput(columnName);
+    };
+
+    const hasValidationError = (columnName) => validationErrors.value[columnName]?.length > 0;
+
+    const getValidationError = (columnName) => validationErrors.value[columnName]?.join(' ');
+
+    const clearValidationErrors = () => {
+      validationErrors.value = {};
+    };
+
+    const SignIn = () => {
+      // Handle form submission
+      console.log('Form submitted with values:', inputValues.value);
+    };
+
+    const getDefaultMonth = () => {
+      const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+      const currentMonth = new Date().getMonth();
+      return months[currentMonth];
+    };
+
+    const setDefaultDateValues = () => {
+      Object.keys(settings.value).forEach((columnName) => {
+        if (columnName === 'day') {
+          const currentDay = new Date().getDate();
+          inputValues.value[columnName] = currentDay;
+        } else if (columnName === 'month') {
+          inputValues.value[columnName] = getDefaultMonth();
+        }
+      });
+    };
+
+    const clearInputs = () => {
+      setDefaultDateValues();
+      clearValidationErrors();
+    };
+
+    onMounted(async () => {
+      try {
+        const response = await fetch('http://localhost:3000/settings/all');
+        const { settings: fetchedSettings } = await response.json();
+        settings.value = fetchedSettings;
+        setDefaultDateValues(); // Set default values after settings are fetched
+      } catch (error) {
+        console.error('Error fetching settings:', error.message);
+      }
+    });
+
+    return {
+      settings,
+      inputValues,
+      getColumnId,
+      getInputType,
+      handleInput,
+      hasValidationError,
+      getValidationError,
+      SignIn,
+      clearInputs,
+    };
+  },
+};
+
+</script>
 
 <style scoped>
 .form-row {
@@ -51,87 +175,21 @@ button {
   margin-right: 40px;
 }
 
-/* Add styles for browsers that don't support 'appearance' property */
 .input::-webkit-inner-spin-button,
 .input::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
 .input {
   appearance: none;
   -moz-appearance: textfield;
   width: 200px;
 }
 
+/* Add styles for error text */
+.error-text {
+  color: red;
+  margin-top: 5px;
+}
 </style>
-
-<script>
-export default {
-  name: 'PredictionPanel',
-  data() {
-    return {
-      settings: {},
-      inputValues: {},
-    };
-  },
-  mounted() {
-    this.fetchSettings();
-    this.setDefaultDateValues(); // Call the method to set default date values
-  },
-  methods: {
-    async fetchSettings() {
-      try {
-        const response = await fetch('http://localhost:3000/settings/all');
-        const { settings } = await response.json();
-
-        // Update the component's data with the received settings
-        this.settings = settings;
-
-        // Initialize inputValues with default values
-        this.setDefaultDateValues();
-      } catch (error) {
-        console.error('Error fetching settings:', error.message);
-      }
-    },
-    getColumnId(columnName) {
-      return `column_${columnName}`;
-    },
-    getInputType(details) {
-      const columnTypeMap = {
-        int: 'number',
-        category: 'text',
-        date: 'date',
-      };
-      return columnTypeMap[details.type] || 'text';
-    },
-    SignIn() {
-      // Handle form submission
-      console.log('Form submitted with values:', this.inputValues);
-    },
-    clearInputs() {
-      // Clear all input values
-      this.setDefaultDateValues();
-    },
-    setDefaultDateValues() {
-      Object.keys(this.settings).forEach((columnName) => {
-        if (columnName === 'day') {
-          const currentDay = new Date().getDate();
-          this.inputValues[columnName] = currentDay;
-        } else if (columnName === 'month') {
-          // Set default value for the "month" input
-          this.inputValues[columnName] = this.getDefaultMonth();
-        }
-      });
-    },
-
-    getDefaultMonth() {
-      // Get the current month as a three-letter abbreviation (e.g., "jan", "feb")
-      const months = [
-        'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec',
-      ];
-      const currentMonth = new Date().getMonth();
-      return months[currentMonth];
-    },
-  },
-};
-</script>

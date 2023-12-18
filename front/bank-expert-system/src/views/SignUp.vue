@@ -7,12 +7,14 @@
         Username:<input type="text" id="username" v-model="username" required />
       </label>
       <label for="password">
-        Password:<input
-          type="password"
-          id="password"
-          v-model="password"
-          required
-        />
+        Password:<input type="password" id="password" v-model="password" required />
+      </label>
+      <label for="role">
+        Role:
+        <select id="role" v-model="role" required>
+          <option value="admin">admin</option>
+          <option value="normal">user</option>
+        </select>
       </label>
       <button type="submit">Sign Up</button>
     </form>
@@ -20,7 +22,7 @@
 
     <div>
       <p>Already have an account?</p>
-      <router-link to="/login">Log In</router-link>
+      <router-link to="/signin">Log In</router-link>
     </div>
   </div>
 </template>
@@ -34,6 +36,7 @@ export default {
     return {
       username: '',
       password: '',
+      role: 'user', // Set a default value for the role
       errorMessage: '',
     };
   },
@@ -43,6 +46,7 @@ export default {
         const response = await axios.post('http://localhost:3000/auth/register', {
           username: this.username,
           password: this.password,
+          role: this.role, // Include the role in the request
         });
 
         // Handle the response as needed

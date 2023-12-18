@@ -1,0 +1,18 @@
+gdy dalem wartosc max_depth dla nowego uczenia, nie dostałem widnow popup
+
+zostawic button dont overwrite, przycisk ten przekierowuje do domyslnej formuły podstrony trening
+
+sprawdzanie czy user juz istnieje podczas rejestracji
+
+okienko ładowania podczas relearningu
+
+zastosowac min/max dla hiperparametrów oraz parametrów w predykcji (przemyslec czy rowniez na frontendzie)
+
+odseparowac accuracy od parametrów w training
+
+
+miec z tylu glowy ewentualne testy jednostkowych/mutacyjnych/funkcjonalnych i ich uzasadnienie
+
+
+
+refactoring 

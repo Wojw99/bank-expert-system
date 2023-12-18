@@ -32,14 +32,6 @@
           <router-link to="/signup" class="login-link">Sign Up</router-link>
         </div>
       </template>
-
-      <!-- User panel -->
-      <template v-else>
-        <div class="user-panel">
-          <!-- <p>Welcome, {{ $store.state.user.username }}</p> -->
-          <!-- Add any additional user-related content or actions here -->
-        </div>
-      </template>
     </div>
   </div>
 </template>

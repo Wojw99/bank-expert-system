@@ -13,7 +13,9 @@
         <li>Max Depth: {{ modelInfo.lastParameters.max_depth }}</li>
         <li>Min Samples Split: {{ modelInfo.lastParameters.min_samples_split }}</li>
         <li>Min Samples Leaf: {{ modelInfo.lastParameters.min_samples_leaf }}</li>
-        <li>Accuracy: {{ modelInfo.lastParameters.accuracy }}</li>
+        <li>
+          Accuracy: <strong>{{ (modelInfo.lastParameters.accuracy * 100).toFixed(2) }}%</strong>
+        </li>
       </ul>
     </div>
 
@@ -41,6 +43,8 @@
     <div v-if="newModelInfo" class="section">
       <h2>New Model Information</h2>
       <p>New Model Accuracy: {{ (newModelInfo.accuracy * 100).toFixed(2) }}%</p>
+      <!-- Confirmation question -->
+      <p>Do you want to overwrite the model with new hyperparameters?</p>
       <div class="button-container">
         <button class="accept-button" @click="acceptRelearning">Yes, Accept Relearning</button>
         <button class="reject-button" @click="rejectRelearning">No, Reject Relearning</button>
@@ -116,13 +120,42 @@ export default {
       }
     },
     async acceptRelearning() {
-      // Add logic to accept relearning (send request to acceptRelearning endpoint)
-      console.log('Accepted relearning');
+      try {
+        const token = this.$store.getters.authToken;
+        const response = await fetch('http://localhost:3000/classification/acceptRelearning', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            // Include any necessary data in the request body
+          }),
+        });
+
+        if (response.ok) {
+          // Handle success, if needed
+          console.log('Accept Relearning successful');
+        } else {
+          // Handle error
+          console.error('Error accepting relearning:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error accepting relearning:', error.message);
+      }
     },
     rejectRelearning() {
-      // Add logic to reject relearning
-      // For example, reset newModelInfo and show the original model info
+      // Reset the form and hide the "New Model Information" section
       this.newModelInfo = null;
+      this.clearInputs();
+    },
+    clearInputs() {
+      this.newParameters = {
+        n_estimators: null,
+        max_depth: null,
+        min_samples_split: null,
+        min_samples_leaf: null,
+      };
     },
   },
   mounted() {
