@@ -16,7 +16,7 @@ router.post('/login', (req, res) => {
     if (user && user.password === password) {
       const token = jwt.sign({ username: username, role: user.role }, accessTokenSecret, { expiresIn: '1h' });
   
-      return res.json({ token });
+      return res.json({ token: token, role: user.role });
     }
   
     res.status(401).json({ message: strings.invalidCredentials });  
@@ -32,7 +32,7 @@ router.post('/register', (req, res) => {
         return res.status(500).json({ message: strings.internalError });
       }
       database.addUser(password, username, strings.userRole)
-      return res.status(201).json({ message: strings.userSuccess });  
+      return res.status(201).json({ role: strings.userRole });  
     })
 });
 

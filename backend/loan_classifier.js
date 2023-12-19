@@ -131,8 +131,7 @@ loanClassifier.acceptRelearning = async function() {
   })
 }
 
-loanClassifier.validateSettingsParam = function(paramKey, param, setting) {
-  console.log(paramKey, param, setting)
+loanClassifier.validateSettingsNumber = function(paramKey, param, setting) {
   if(!Number.isInteger(param)) {
     throw new ValidationError(`${paramKey} must be instance of Int`)
   }
@@ -150,11 +149,21 @@ loanClassifier.validateSettingsParam = function(paramKey, param, setting) {
   }
 }
 
+loanClassifier.validateSettingsCategory = function(paramKey, param, setting) {
+  if(!setting.posibilities.includes(param)) {
+    throw new ValidationError(`Category ${paramKey} must be in: ${setting.posibilities}`)
+  }
+}
+
 loanClassifier.validateClassificationParams = function(reqParameters) {
-  loanClassifier.validateSettingsParam('age', reqParameters.age, config.settings.age)
-  loanClassifier.validateSettingsParam('balance', reqParameters.balance, config.settings.balance)
-  loanClassifier.validateSettingsParam('day', reqParameters.day, config.settings.day)
-  loanClassifier.validateSettingsParam('duration', reqParameters.duration, config.settings.duration)
+  loanClassifier.validateSettingsNumber('age', reqParameters.age, config.settings.age)
+  loanClassifier.validateSettingsNumber('balance', reqParameters.balance, config.settings.balance)
+  loanClassifier.validateSettingsNumber('day', reqParameters.day, config.settings.day)
+  loanClassifier.validateSettingsNumber('duration', reqParameters.duration, config.settings.duration)
+
+  loanClassifier.validateSettingsCategory('job', reqParameters.job, config.settings.job)
+  loanClassifier.validateSettingsCategory('education', reqParameters.education, config.settings.education)
+  loanClassifier.validateSettingsCategory('month', reqParameters.month, config.settings.month)
 }
 
 loanClassifier.classify = async function(reqParameters) {
