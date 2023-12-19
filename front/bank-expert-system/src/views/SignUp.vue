@@ -46,7 +46,7 @@ export default {
         const response = await axios.post('http://localhost:3000/auth/register', {
           username: this.username,
           password: this.password,
-          role: this.role, // Include the role in the request
+          role: this.role,
         });
 
         // Handle the response as needed
@@ -57,8 +57,14 @@ export default {
       } catch (error) {
         console.error('Error:', error.message);
 
-        // Update errorMessage to show the error message to the user
-        this.errorMessage = 'Sign up failed. Please try again.';
+        // Check if the error has a response and the status is 400
+        if (error.response && error.response.status === 400) {
+          // Display a specific message for User already exists
+          this.errorMessage = 'User already exists.';
+        } else {
+          // Display a generic message for other errors
+          this.errorMessage = 'Sign up failed. Please try again.';
+        }
       }
     },
   },

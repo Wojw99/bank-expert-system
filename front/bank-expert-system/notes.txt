@@ -4,8 +4,6 @@ i ich uzasadnienie - pending
 
 szyfrowanie - pending
 
-sprawdzanie czy user juz istnieje podczas rejestracji - muszę dostawać taką zwrotkę
-
 rozpoznawanie roli usera - nie dostaję roli w responsach
 
 dokonczyc predykcje - dostaję error 500 i jej walidację
