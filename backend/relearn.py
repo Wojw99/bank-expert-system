@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import sys
 import json
+import joblib
 
 input_data = json.loads(sys.argv[1])
 
@@ -23,5 +24,7 @@ forest.fit(x_train, y_train)
 
 y_pred = forest.predict(x_val)
 accuracy = accuracy_score(y_val, y_pred)
+
+joblib.dump(forest, 'trained_model_temp.joblib')
 
 print(json.dumps(accuracy))

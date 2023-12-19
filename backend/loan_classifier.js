@@ -72,9 +72,28 @@ loanClassifier.relearn = async function (
     });
 }
 
-loanClassifier.acceptRelearning = function() {
+loanClassifier.acceptRelearning = async function() {
   this.hyperparameters = this.hyperparametersTemp
   database.updateParameters(this.hyperparameters)
+
+  return new Promise((resolve, reject) => {
+    const pythonScriptPath = 'acceptRelearning.py';
+    const pythonProcess = spawn('python', [pythonScriptPath]);
+
+    pythonProcess.stdout.on('data', (data) => {
+      console.log(`${strings.pythonScriptOutput} ${data}`);
+      resolve(data);
+  });
+    
+    pythonProcess.on('close', (code) => {
+      if (code !== 0) {
+        console.error(`${strings.pythonScriptExitedWithCode} ${code}`);
+        reject(new Error('Async operation failed'));
+      } else {
+       console.log(strings.pythonScriptExecComplit);
+      }
+   });
+  })
 }
 
 loanClassifier.classify = async function(
@@ -124,9 +143,10 @@ loanClassifier.classify = async function(
         reject(new Error('Async operation failed'));
       } else {
         console.log(strings.pythonScriptExecComplit);
+        reject(new Error('Something went wrong?'));
       }
     });
-    })
+  })
 }
 
 module.exports = loanClassifier

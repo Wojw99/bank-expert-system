@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 const strings = require('../strings')
 const database = require('../database')
 const config = require('../config');
+const auth = require('./auth');
 
 router.parameters = {}
 
@@ -14,7 +15,7 @@ database.getParameters(function (error, params) {
   }
 })
 
-router.get('/all', (req, res) => {
+router.get('/all', auth.authenticateJWT, (req, res) => {
     try {
         const settings = config.settings
         const lastParams = router.parameters

@@ -10,7 +10,7 @@ router.post('/acceptRelearning', auth.authenticateJWT, async (req, res) => {
   if(req.user && req.user.role !== 'admin') {
     return res.status(401).json({ message : strings.unauthorized}).send()
   }
-  loanClassifier.acceptRelearning()
+  await loanClassifier.acceptRelearning()
   return res.json({"Status": "updated"});
 });
 
