@@ -289,6 +289,8 @@ export default {
           // Handle error
           console.error('Error accepting relearning:', response.statusText);
         }
+        this.newModelInfo = null;
+        this.clearInputs();
       } catch (error) {
         console.error('Error accepting relearning:', error.message);
       }

@@ -7,7 +7,7 @@
         <label :for="getColumnId(columnName)" class="label">{{ columnName }}
           <template v-if="details.type === 'category'">
             <select :id="getColumnId(columnName)"
-            v-model="inputValues[columnName]" class="input">
+            v-model="inputValues[columnName]" class="input" @change="handleInput(columnName)">
               <option v-for="option in details.posibilities"
               :key="option" :value="option">{{ option }}</option>
             </select>
@@ -61,22 +61,24 @@ export default {
     };
 
     const validateInput = (columnName) => {
-      const value = inputValues.value[columnName];
+      const value = String(inputValues.value[columnName]); // Convert value to string
       const details = settings.value[columnName];
       const errors = [];
 
       // Check for empty or non-string inputs
-      if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) {
+      if (value === null || value === undefined || value.trim() === '') {
         errors.push('Please enter a valid value.');
       } else if (details && details.type === 'int') {
         // Check for valid integer values
         const intValue = parseInt(value, 10);
-        const minValue = details.min;
-        const maxValue = details.max;
 
-        if (Number.isNaN(intValue)) {
+        if (Number.isNaN(intValue) || value.includes('.') || value.includes(',')) {
           errors.push('Please enter a valid integer value.');
         } else {
+          // Validate against min and max values
+          const minValue = details.min;
+          const maxValue = details.max;
+
           if (minValue !== null && intValue < parseInt(minValue, 10)) {
             errors.push(`Value should be greater than or equal to ${minValue}.`);
           }
@@ -99,13 +101,48 @@ export default {
     };
 
     const validateForm = () => {
-      // Check the overall validity of the form
-      isFormValid.value = Object.values(inputValues.value).every((value) => value !== '' && value !== null);
-    };
+  // Check the overall validity of the form
+  isFormValid.value = Object.entries(settings.value).every(([columnName, details]) => {
+    const value = inputValues.value[columnName];
+
+    // Check for empty values
+    if (value === '' || value === null || value === undefined) {
+      validationErrors.value[columnName] = ['Please enter... a valid value.'];
+      return false;
+    }
+
+    // Check for valid integer values for int type columns
+    if (details.type === 'int') {
+      const intValue = parseInt(value, 10);
+
+      if (!Number.isInteger(value)) {
+        validationErrors.value[columnName] = ['Please enter a valid integer value.'];
+        return false;
+      }
+
+      // Validate against min and max values
+      const minValue = details.min;
+      const maxValue = details.max;
+
+      if (minValue !== null && intValue < parseInt(minValue, 10)) {
+        validationErrors.value[columnName] = [`Value should be greater than or equal to ${minValue}.`];
+        return false;
+      }
+      if (maxValue !== null && intValue > parseInt(maxValue, 10)) {
+        validationErrors.value[columnName] = [`Value should be less than or equal to ${maxValue}.`];
+        return false;
+      }
+    }
+
+    // Clear validation errors if the value is valid
+    validationErrors.value[columnName] = [];
+    return true;
+  });
+};
 
     const handleInput = (columnName) => {
       validateInput(columnName);
-      validateForm();
+      // validateForm();
     };
 
     const getDefaultMonth = () => {
@@ -143,48 +180,57 @@ export default {
           validationErrors.value[columnName] = ['Please enter a valid value.'];
         } else if (details && details.type === 'category' && !value) {
           validationErrors.value[columnName] = ['Please select a value.'];
+        } else {
+          validationErrors.value[columnName] = []; // Clear validation errors if the value is valid
         }
       });
     };
 
     const predictLoan = async () => {
-      try {
-        // Validate inputs
-        validateForm();
-        showEmptyInputAlerts();
+  try {
+    // Validate inputs
+    validateForm();
+    showEmptyInputAlerts();
 
-        // Exit early if there are validation errors or the form is invalid
-        if (!isFormValid.value) {
-          console.log('Form is not valid. Prediction aborted.');
-          return;
+    // Exit early if there are validation errors or the form is invalid
+    if (!isFormValid.value) {
+      console.log('Form is not valid. Prediction aborted.');
+      return;
+    }
+
+    // Create query string based on input values
+    const queryParams = new URLSearchParams();
+    Object.keys(inputValues.value).forEach((columnName) => {
+      // Parse values to integers for int type columns
+      if (settings.value[columnName].type === 'int') {
+        const intValue = parseInt(inputValues.value[columnName], 10);
+        if (!Number.isNaN(intValue)) {
+          queryParams.append(columnName, intValue);
         }
-
-        // Create payload object based on input values
-        const payload = {};
-        Object.keys(inputValues.value).forEach((columnName) => {
-          payload[columnName] = inputValues.value[columnName];
-        });
-
-        const token = store.getters.authToken;
-        const response = await fetch('http://localhost:3000/classification/classify', {
-          method: 'POST', // Change the method to POST
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          predictionResult.value = result.prediction;
-        } else {
-          console.error('Error predicting loan:', response.statusText);
-        }
-      } catch (error) {
-        console.error('Error predicting loan:', error.message);
+      } else {
+        queryParams.append(columnName, inputValues.value[columnName]);
       }
-    };
+    });
+
+    const token = store.getters.authToken;
+    const response = await fetch(`http://localhost:3000/classification/classify?${queryParams}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      predictionResult.value = result.prediction;
+    } else {
+      console.error('Error predicting loan:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error predicting loan:', error.message);
+  }
+};
 
     onMounted(async () => {
       try {
