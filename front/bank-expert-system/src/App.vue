@@ -14,7 +14,8 @@
 </template>
 
 <script>
-import axios from 'axios';
+// import axios from 'axios';
+import store from '@/store/store';
 import TopMenu from './components/TopMenu.vue';
 
 export default {
@@ -29,8 +30,14 @@ export default {
   methods: {
     async fetchSettings() {
       try {
+        const token = store.getters.authToken;
         // Send a request to the endpoint on component mount
-        const response = await axios.get('http://localhost:3000/settings/all');
+        const response = await fetch('http://localhost:3000/settings/all', {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
         console.log('Settings:', response.data);
 
         // Update the state to indicate that settings have been fetched

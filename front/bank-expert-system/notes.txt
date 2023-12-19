@@ -3,3 +3,9 @@ sprawdzanie czy user juz istnieje podczas rejestracji
 zastosowac min/max dla hiperparametrów 
 
 miec z tylu glowy ewentualne testy jednostkowych/mutacyjnych/funkcjonalnych i ich uzasadnienie
+
+szyfrowanie 
+
+rozpoznawanie roli usera
+
+dokonczyc predykcje

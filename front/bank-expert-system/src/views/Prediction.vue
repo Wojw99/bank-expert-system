@@ -162,10 +162,23 @@ export default {
 
     onMounted(async () => {
       try {
-        const response = await fetch('http://localhost:3000/settings/all');
-        const { settings: fetchedSettings } = await response.json();
-        settings.value = fetchedSettings;
-        setDefaultDateValues(); // Set default values after settings are fetched
+        // Retrieve the authentication token from the Vuex store
+        const token = store.getters.authToken;
+
+        const response = await fetch('http://localhost:3000/settings/all', {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const { settings: fetchedSettings } = await response.json();
+          settings.value = fetchedSettings;
+          setDefaultDateValues(); // Set default values after settings are fetched
+        } else {
+          console.error('Error fetching settings:', response.statusText);
+        }
       } catch (error) {
         console.error('Error fetching settings:', error.message);
       }

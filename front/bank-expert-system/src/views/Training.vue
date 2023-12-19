@@ -1,21 +1,23 @@
 <template>
-  <div>
-    <h1>Training</h1>
+    <div>
+      <h1>Training</h1>
 
-    <!-- Model Info section -->
-    <div class="section">
-      <h2>Model Information</h2>
-      <p>Last Training Parameters:</p>
-      <ul>
-        <li>ID: {{ modelInfo.lastParameters.id }}</li>
-        <li>Random State: {{ modelInfo.lastParameters.random_state }}</li>
-        <li>N Estimators: {{ modelInfo.lastParameters.n_estimators }}</li>
-        <li>Max Depth: {{ modelInfo.lastParameters.max_depth }}</li>
-        <li>Min Samples Split: {{ modelInfo.lastParameters.min_samples_split }}</li>
-        <li>Min Samples Leaf: {{ modelInfo.lastParameters.min_samples_leaf }}</li>
-      </ul>
-      <strong>Accuracy: {{ (modelInfo.lastParameters.accuracy * 100).toFixed(2) }}%</strong>
-    </div>
+      <div v-if="modelInfo && modelInfo.lastParameters">
+      <!-- Model Info section -->
+      <div class="section">
+        <h2>Model Information</h2>
+        <p>Last Training Parameters:</p>
+        <ul>
+          <li>ID: {{ modelInfo.lastParameters.id }}</li>
+          <li>Random State: {{ modelInfo.lastParameters.random_state }}</li>
+          <li>N Estimators: {{ modelInfo.lastParameters.n_estimators }}</li>
+          <li>Max Depth: {{ modelInfo.lastParameters.max_depth }}</li>
+          <li>Min Samples Split: {{ modelInfo.lastParameters.min_samples_split }}</li>
+          <li>Min Samples Leaf: {{ modelInfo.lastParameters.min_samples_leaf }}</li>
+        </ul>
+        <strong>Accuracy: {{ (modelInfo.lastParameters.accuracy * 100).toFixed(2) }}%</strong>
+      </div>
+      </div>
 
     <!-- Form to modify hyperparameters -->
     <div class="section">
@@ -58,6 +60,8 @@
 </template>
 
 <script>
+import store from '@/store/store';
+
 export default {
   name: 'TrainingPanel',
   data() {
@@ -96,7 +100,13 @@ export default {
     },
     async fetchModelInfo() {
       try {
-        const response = await fetch('http://localhost:3000/settings/all');
+        const token = store.getters.authToken;
+        const response = await fetch('http://localhost:3000/settings/all', {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const { lastParameters } = await response.json();
         this.modelInfo.lastParameters = lastParameters;
       } catch (error) {
