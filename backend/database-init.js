@@ -6,18 +6,19 @@ db.serialize(() => {
   db.run("DROP TABLE IF EXISTS users");
   db.run("DROP TABLE IF EXISTS parameters");
 
-    db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, password TEXT, username TEXT, role TEXT)");
+    db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, password TEXT, username TEXT, role TEXT, salt TEXT)");
 
     const initialUsers = [
       { username: 'admin', password: 'admin123', role: 'admin' },
       { username: 'user', password: 'user123', role: 'user' },
     ];
   
-    const insertUser = db.prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
+    const insertUser = db.prepare("INSERT INTO users (username, password, role, salt) VALUES (?, ?, ?, ?)");
   
     initialUsers.forEach((user) => {
-      const hashedPassword = bcrypt.hashSync(user.password, 10);
-      insertUser.run(user.username, hashedPassword, user.role);
+      const salt = bcrypt.genSaltSync(10)
+      const hashedPassword = bcrypt.hashSync(user.password, salt);
+      insertUser.run(user.username, hashedPassword, user.role, salt);
     });
   
     insertUser.finalize();

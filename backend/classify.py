@@ -24,4 +24,4 @@ sample = [[
 
 prediction = forest.predict(sample)
 
-print(json.dumps(prediction.tolist()))
+print(json.dumps({"accuracy" : prediction.tolist(), "sample" : sample}))

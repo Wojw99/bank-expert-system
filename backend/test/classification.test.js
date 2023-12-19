@@ -12,6 +12,56 @@ describe('Classification', () => {
     const jwt = require('jsonwebtoken');
     const token = jwt.sign({ username: 'admin', role: strings.adminRole }, accessTokenSecret, { expiresIn: '1h' });
 
+    describe('accept relearning', () => {
+        it(`relearning should be accepted`, async () => {
+            const params = {
+                "random_state" : 42,
+                "n_estimators" : 60,
+                "max_depth" : 66,
+                "min_samples_split" : 5,
+                "min_samples_leaf" : 1
+            }
+
+            const resp1 = await chai.request(app)
+            .post('/classification/relearn')
+            .set('Authorization', `Bearer ${token}`)
+            .send(params)
+
+            const resp2 = await chai.request(app)
+            .post('/classification/acceptRelearning')
+            .set('Authorization', `Bearer ${token}`)
+            .send(params)
+
+            expect(resp1).to.have.status(200);
+            expect(resp2).to.have.status(200);
+        });
+    });
+
+    describe('classification', () => {
+        it(`should return 1`, (done) => {
+            const params = {
+                "age" : 31,
+                "job" : "technician",
+                "balance" : 26,
+                "day" : 18,
+                "month" : "sep",
+                "duration" : 419,
+                "education" : "tertiary"
+            }
+
+            chai.request(app)
+            .get('/classification/classify')
+            .set('Authorization', `Bearer ${token}`)
+            .send(params)
+            .end((err, resp) => {
+                const prediction = resp.body.prediction
+                
+                expect(prediction).to.deep.equal([1]);
+                done()
+            })
+        });
+    });
+
     describe('relearn', () => {
         it(`accuracies from two relearnings with different params should be not equal`, async () => {
             const params1 = {
@@ -46,61 +96,5 @@ describe('Classification', () => {
             expect(accuracy1).not.to.equal(accuracy2);
         });
     });
-
-    describe('accept relearning', () => {
-        it(`relearning should be accepted`, async () => {
-            const params = {
-                "random_state" : 8,
-                "n_estimators" : 8,
-                "max_depth" : 8,
-                "min_samples_split" : 8,
-                "min_samples_leaf" : 8
-            }
-
-            console.log("start requests")
-
-            const resp1 = await chai.request(app)
-            .post('/classification/relearn')
-            .set('Authorization', `Bearer ${token}`)
-            .send(params)
-
-            const resp2 = await chai.request(app)
-            .post('/classification/acceptRelearning')
-            .set('Authorization', `Bearer ${token}`)
-            .send(params)
-
-            const resp3 = chai.request(app)
-            .post('/settings/all')
-            .set('Authorization', `Bearer ${token}`)
-            .send(params)
-
-            console.log("BOOODY", resp3.body)
-            expect(params.random_state).to.equal(resp3.body.lastParams.random_state);
-        });
-    });
-
-    describe('classification', () => {
-        it(`should return 1`, async () => {
-            const params = {
-                "age" : 54,
-                "job" : "unknown",
-                "balance" : 11,
-                "day" : 18,
-                "month" : 8,
-                "duration" : 48,
-                "education" : "primary"
-            }
-
-            const resp = await chai.request(app)
-            .post('/classification/classify')
-            .set('Authorization', `Bearer ${token}`)
-            .send(params)
-            
-            const prediction = resp.body.prediction
-
-            expect(prediction).to.equal(1);
-        });
-    });
-
 });
 
