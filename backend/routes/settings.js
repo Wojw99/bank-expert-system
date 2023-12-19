@@ -7,22 +7,17 @@ const database = require('../database')
 const config = require('../config');
 const auth = require('./auth');
 
-router.parameters = {}
-
-database.getParameters(function (error, params) {
-  if(params !== null) {
-    router.parameters = params
-  }
-})
-
 router.get('/all', auth.authenticateJWT, (req, res) => {
-    try {
+  database.getParameters(function (error, params) {
+    if(params !== null) {
+      try {
         const settings = config.settings
-        const lastParams = router.parameters
-        return res.json({settings: settings, lastParameters: lastParams});
+        return res.json({settings: settings, lastParameters: params});
       } catch (error) {
         res.status(500).send('Internal Server Error');
     }
+    }
+  })
 });
 
 module.exports = router
