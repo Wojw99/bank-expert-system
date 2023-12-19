@@ -96,5 +96,70 @@ describe('Classification', () => {
             expect(accuracy1).not.to.equal(accuracy2);
         });
     });
+
+
+    // describe('big test', () => {
+    //     it(`relearning acceptation should change model classification`, async () => {
+    //         const hyperParams1 = {
+    //             "random_state" : 42,
+    //             "n_estimators" : 60,
+    //             "max_depth" : 66,
+    //             "min_samples_split" : 5,
+    //             "min_samples_leaf" : 1
+    //         }
+
+    //         const resp1 = await chai.request(app)
+    //         .post('/classification/relearn')
+    //         .set('Authorization', `Bearer ${token}`)
+    //         .send(hyperParams1)
+
+    //         const resp2 = await chai.request(app)
+    //         .post('/classification/acceptRelearning')
+    //         .set('Authorization', `Bearer ${token}`)
+    //         .send(hyperParams1)
+
+    //         const params1 = {
+    //             "age" : 31,
+    //             "job" : "technician",
+    //             "balance" : 26,
+    //             "day" : 18,
+    //             "month" : "sep",
+    //             "duration" : 419,
+    //             "education" : "tertiary"
+    //         }
+
+    //         const r1 = await chai.request(app)
+    //         .get('/classification/classify')
+    //         .set('Authorization', `Bearer ${token}`)
+    //         .send(params1)
+    //         const p1 = r1.body.prediction
+
+    //         const hyperParams2 = {
+    //             "random_state" : 1,
+    //             "n_estimators" : 1,
+    //             "max_depth" : 1,
+    //             "min_samples_split" : 1,
+    //             "min_samples_leaf" : 1
+    //         }
+
+    //         await chai.request(app)
+    //         .post('/classification/relearn')
+    //         .set('Authorization', `Bearer ${token}`)
+    //         .send(hyperParams2)
+
+    //         await chai.request(app)
+    //         .post('/classification/acceptRelearning')
+    //         .set('Authorization', `Bearer ${token}`)
+    //         .send(hyperParams2)
+
+    //         const r2 = await chai.request(app)
+    //         .get('/classification/classify')
+    //         .set('Authorization', `Bearer ${token}`)
+    //         .send(params1)
+    //         const p2 = r2.body.prediction
+
+    //         expect(p1).not.to.deep.equal(p2);
+    //     });
+    // })
 });
 

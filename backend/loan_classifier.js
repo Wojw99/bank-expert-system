@@ -1,6 +1,7 @@
 const database = require('./database')
 const config = require('./config');
 const ValidationError = require('./validation_error')
+const fs = require('fs');
 
 const { spawn } = require('child_process');
 const strings = require('./strings');
@@ -45,8 +46,8 @@ loanClassifier.validateRelearningParams = function(reqHyperparameters) {
   if(min_samples_split === null || min_samples_split === undefined) {
     throw new ValidationError('min_samples_split cannot be null.')
   } 
-  if(min_samples_split <= 0) {
-    throw new ValidationError('min_samples_split must be greater than 0.')
+  if(min_samples_split <= 1) {
+    throw new ValidationError('min_samples_split must be greater than 1.')
   }
 
   const min_samples_leaf = reqHyperparameters.min_samples_leaf 
@@ -169,11 +170,11 @@ loanClassifier.validateClassificationParams = function(reqParameters) {
 loanClassifier.classify = async function(reqParameters) {
     return new Promise((resolve, reject) => {
 
-    try{
-      loanClassifier.validateClassificationParams(reqParameters)
-    } catch(error) {
-      reject(error)
-    }
+    // try{
+    //   loanClassifier.validateClassificationParams(reqParameters)
+    // } catch(error) {
+    //   reject(error)
+    // }
 
     const pythonScriptPath = 'classify.py';
 
@@ -204,7 +205,7 @@ loanClassifier.classify = async function(reqParameters) {
     pythonProcess.stdout.on('data', (data) => {
         console.log(`${strings.pythonScriptOutput} ${data}`);
         const parsed = JSON.parse(data);
-        resolve(parsed.accuracy);
+        resolve(parsed.prediction);
     });
       
     pythonProcess.on('close', (code) => {
