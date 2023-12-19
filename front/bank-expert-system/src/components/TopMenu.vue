@@ -2,18 +2,15 @@
 <template>
     <div>
         <nav>
-            <router-link
-            v-if="!$store.getters.isAuthenticated && !requiresUnauth"
+            <router-link v-if="!$store.getters.isAuthenticated && !requiresUnauth"
             to="/">Home</router-link>
-            <router-link
-            v-if="!$store.getters.isAuthenticated"
+            <router-link v-if="!$store.getters.isAuthenticated"
             to="/signin">Sign In</router-link>
-            <router-link
-            v-if="$store.getters.isAuthenticated"
+            <router-link v-if="$store.getters.isAuthenticated"
             to="/prediction">Prediction</router-link>
-            <router-link
-            v-if="$store.getters.isAuthenticated"
-            to="/training">Training</router-link>
+
+            <!-- Conditionally render the "Training" link for admin users -->
+            <router-link v-if="showTrainingLink" to="/training">Training</router-link>
 
             <!-- Logout button -->
             <button v-if="$store.getters.isAuthenticated" @click="logout">Log Out</button>
@@ -36,6 +33,11 @@ export default {
         requiresUnauth() {
             return this.$route.meta.requiresUnauth;
         },
+        showTrainingLink() {
+            // Check if the user has the admin role
+            const { userRole } = this.$store.getters;
+            return this.$store.getters.isAuthenticated && userRole === 'admin';
+        },
     },
 };
 </script>
@@ -44,7 +46,6 @@ export default {
 nav {
     display: flex;
     justify-content: space-between;
-    /* Space between items, pushing "Log Out" to the right */
     align-items: center;
     padding: 30px;
 }

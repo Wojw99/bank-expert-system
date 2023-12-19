@@ -53,7 +53,7 @@ export default {
         console.log('Response:', response.data);
 
         // Redirect to the home page or login page after successful sign up
-        this.$router.push('/home');
+        this.$router.push('/signin');
       } catch (error) {
         console.error('Error:', error.message);
 

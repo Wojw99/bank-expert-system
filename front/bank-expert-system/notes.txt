@@ -4,6 +4,4 @@ i ich uzasadnienie - pending
 
 szyfrowanie - pending
 
-rozpoznawanie roli usera - nie dostaję roli w responsach
-
 dokonczyc predykcje - dostaję error 500 i jej walidację

@@ -97,34 +97,13 @@ export default {
     };
 
     const validateForm = () => {
-  console.log('validationErrors: ', validationErrors.value);
-  // Check the overall validity of the form
-  console.log(inputValues.value);
-  Object.entries(inputValues.value).forEach(([key, value]) => {
-    console.log(`Field: ${key}, value: ${value}`);
-    if (value !== '' && value !== null) {
-      console.log('git');
-    }
-  });
-  Object.entries(inputValues.value).forEach(([key, value]) => {
-    console.log(`Field: ${key}, value: ${value}`);
-    if (value !== '' && value !== null) {
-      console.log('git2');
-    }
-  });
-  isFormValid.value = Object.values(inputValues.value).every((value) => value !== '' && value !== null);
-  console.log('isFormValid: ', isFormValid.value);
-  // console.log('inputValue: ', inputValues.value);
-};
+      // Check the overall validity of the form
+      isFormValid.value = Object.values(inputValues.value).every((value) => value !== '' && value !== null);
+    };
 
     const handleInput = (columnName) => {
       validateInput(columnName);
       validateForm();
-    };
-
-    const SignIn = () => {
-      // Handle form submission
-      console.log('Form submitted with values:', inputValues.value);
     };
 
     const getDefaultMonth = () => {
@@ -220,8 +199,7 @@ export default {
           inputValues.value[columnName] = null;
         });
 
-        setDefaultDateValues(); // Ustaw domyślne wartości po pobraniu ustawień
-        console.log('validationErrors: ', validationErrors.value);
+        setDefaultDateValues();
       } else {
         console.error('Error fetching settings: Empty response');
       }
@@ -242,7 +220,6 @@ export default {
       hasValidationError,
       getValidationError,
       predictLoan,
-      SignIn,
       clearInputs,
       predictionResult,
       isFormValid,

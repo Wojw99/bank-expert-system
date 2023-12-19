@@ -1,10 +1,12 @@
 // store.js
+
 import { createStore } from 'vuex';
 
 const store = createStore({
     state: {
         user: null,
-        authToken: null, // Add authToken to the state
+        authToken: null,
+        userRole: null, // Add userRole to the state
     },
     mutations: {
         setUser(state, user) {
@@ -12,20 +14,25 @@ const store = createStore({
         },
         clearUser(state) {
             state.user = null;
+            state.userRole = null; // Clear userRole on logout
         },
         setAuthToken(state, token) {
             state.authToken = token;
         },
+        setUserRole(state, role) {
+            state.userRole = role;
+        },
     },
     actions: {
-        async loginUser({ commit }, { user, token }) {
+        async loginUser({ commit }, { user, token, role }) {
             try {
                 // Simulating an API call with a delay
                 await new Promise((resolve) => setTimeout(() => resolve(), 1000));
 
-                // Set the user and authentication token in the state
+                // Set the user, authentication token, and user role in the state
                 commit('setUser', user);
                 commit('setAuthToken', token);
+                commit('setUserRole', role);
             } catch (error) {
                 console.error('Error logging in:', error.message);
             }
@@ -42,6 +49,9 @@ const store = createStore({
         },
         authToken(state) {
             return state.authToken;
+        },
+        userRole(state) {
+            return state.userRole;
         },
     },
 });

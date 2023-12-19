@@ -88,10 +88,11 @@ export default {
           },
         );
 
-        const { user, token } = response.data;
+        const { token, role } = response.data;
+        console.log('role: ', role);
 
-        // Dispatch the loginUser action with the signed-in user data and token
-        await this.$store.dispatch('loginUser', { user, token });
+        // Dispatch the loginUser action with the signed-in user data, token, and role
+        await this.$store.dispatch('loginUser', { token, role });
 
         // Check if the user is authenticated after successful login
         if (this.$store.getters.isAuthenticated) {
