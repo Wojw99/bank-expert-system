@@ -25,10 +25,34 @@ describe('POST /login', () => {
           .send({ username: 'invalidUser', password: 'invalidPassword' })
           .end((err, res) => {
             expect(res).to.have.status(401);
-            expect(res.body).to.have.property('message').that.equals('Invalid credentials');
-            done();
+            expect(res.text).to.equal(strings.invalidCredentials);
+            if(err) {
+              done(err);
+            } else {
+              done();
+            }
         });
     });
+
+    it('should return a role', (done) => {
+      chai.request(app)
+      .post('/auth/login')
+      .send({ username: 'user', password: 'user123' })
+      .end((err, res) => {
+        expect(res.body).to.have.property('role');
+        done();
+      });
+    })
+
+    it('should return a role', (done) => {
+      chai.request(app)
+      .post('/auth/login')
+      .send({ username: 'admin', password: 'admin123' })
+      .end((err, res) => {
+        expect(res.body).to.have.property('role');
+        done();
+      });
+    })
 })
 
 describe('POST /register', () => {
@@ -55,5 +79,33 @@ describe('POST /register', () => {
           done();
         });
     });
+  });
+  
+
+  describe('token handling', () => {
+    it('should get auth token invalid error', (done) => {
+      chai.request(app)
+      .get('/settings/all')
+      .set('Authorization', `Bearer 4454`)
+      .end((err, res) => {
+        expect(res).to.have.status(403)
+        expect(res.text).to.equal(strings.authTokenIvalid);
+        done()
+      })
+    });
+
+    it('should get auth token missing error', (done) => {
+      chai.request(app)
+      .get('/settings/all')
+      .end((err, res) => {
+        expect(res).to.have.status(401)
+        expect(res.text).to.equal(strings.authTokenMissing);
+        done()
+      })
+    });
+
+
+
+    
   });
   

@@ -9,7 +9,7 @@ const ValidationError = require('../validation_error')
 
 router.post('/acceptRelearning', auth.authenticateJWT, async (req, res) => {
   if(req.user && req.user.role !== 'admin') {
-    return res.status(401).json({ message : strings.unauthorized}).send()
+    return res.status(401).send(strings.unauthorized)
   }
   await loanClassifier.acceptRelearning()
   return res.json({"Status": "updated"});
@@ -34,7 +34,7 @@ router.post('/relearn', auth.authenticateJWT, async (req, res) => {
   const { user } = req.user;
 
   if(req.user && req.user.role !== 'admin') {
-    return res.status(401).json({ message : strings.unauthorized}).send()
+    return res.status(401).send(strings.unauthorized)
   }
 
   try {

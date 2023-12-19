@@ -1,4 +1,5 @@
 const sqlite3 = require('sqlite3').verbose()
+const bcrypt = require('bcrypt');
 const db = new sqlite3.Database('./database.db')
 
 db.serialize(() => {
@@ -7,19 +8,32 @@ db.serialize(() => {
 
     db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, password TEXT, username TEXT, role TEXT)");
 
+    const initialUsers = [
+      { username: 'admin', password: 'admin123', role: 'admin' },
+      { username: 'user', password: 'user123', role: 'user' },
+    ];
+  
+    const insertUser = db.prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
+  
+    initialUsers.forEach((user) => {
+      const hashedPassword = bcrypt.hashSync(user.password, 10);
+      insertUser.run(user.username, hashedPassword, user.role);
+    });
+  
+    insertUser.finalize();
+
     console.log('Table "users" created successfully.');
 
     db.run(`
-  CREATE TABLE IF NOT EXISTS parameters (
-    id INTEGER PRIMARY KEY,
-    random_state INTEGER,
-    n_estimators INTEGER,
-    max_depth INTEGER,
-    min_samples_split INTEGER,
-    min_samples_leaf INTEGER,
-    accuracy REAL
-  )
-`);
+      CREATE TABLE IF NOT EXISTS parameters (
+      id INTEGER PRIMARY KEY,
+      random_state INTEGER,
+      n_estimators INTEGER,
+      max_depth INTEGER,
+      min_samples_split INTEGER,
+      min_samples_leaf INTEGER,
+      accuracy REAL
+    )`);
 
 var hyperparameters = {
   random_state : 42,
@@ -41,7 +55,6 @@ db.run(
       hyperparameters.accuracy
   ],
 );
-
     console.log('Table "parameters" created successfully.');
 });
 

@@ -1,37 +1,44 @@
-const express = require('express');
-const router = express.Router();
-const jwt = require('jsonwebtoken');
-const bodyParser = require('body-parser')
-const config = require('../config');
+const express = require('express')
+const router = express.Router()
+const jwt = require('jsonwebtoken')
+const config = require('../config')
 const strings = require('../strings')
 const database = require('../database')
+const bcrypt = require('bcrypt');
 const accessTokenSecret = config.accessTokenSecret
 
-// let users = database.getAllUsers()
-
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     const user = database.users.find(user => user.username === username);
-    if (user && user.password === password) {
+    var passwordMatch = ""
+
+    try {
+      passwordMatch = await bcrypt.compare(password, user.password);
+    } catch(error) {
+      res.status(401).send(strings.invalidCredentials);  
+    }
+
+    if (user && passwordMatch) {
       const token = jwt.sign({ username: username, role: user.role }, accessTokenSecret, { expiresIn: '1h' });
   
       return res.json({ token: token, role: user.role });
     }
   
-    res.status(401).json({ message: strings.invalidCredentials });  
+    res.status(401).send(strings.invalidCredentials);  
 });
 
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
     const { username, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     database.getAllUsersCallback((error, users) => {
       if (users && users.find(user => user.username === username)) {
-        return res.status(400).json({ message: strings.userExists });
+        return res.status(400).send(strings.userExists);
       } else if (error || users === null) {
-        return res.status(500).json({ message: strings.internalError });
+        return res.status(500).send(strings.internalError);
       }
-      database.addUser(password, username, strings.userRole)
+      database.addUser(hashedPassword, username, strings.userRole)
       return res.status(201).json({ role: strings.userRole });  
     })
 });
@@ -44,7 +51,7 @@ router.authenticateJWT = (req, res, next) => {
 
       jwt.verify(token, accessTokenSecret, (err, user) => {
           if (err) {
-              return res.status(403).json({ message: strings.authTokenIvalid}).send();
+              return res.status(403).send(strings.authTokenIvalid).send();
           }
 
           req.user = user;
@@ -52,7 +59,7 @@ router.authenticateJWT = (req, res, next) => {
           next();
       });
   } else {
-      res.status(401).json({ message: strings.authTokenMissing}).send();
+      res.status(401).send(strings.authTokenMissing);
   }
 };
 

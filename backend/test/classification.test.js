@@ -90,15 +90,13 @@ describe('Classification', () => {
                 "duration" : 48,
                 "education" : "primary"
             }
-            console.log('start request')
+
             const resp = await chai.request(app)
             .post('/classification/classify')
             .set('Authorization', `Bearer ${token}`)
             .send(params)
             
-            console.log('test body', resp.body)
             const prediction = resp.body.prediction
-            console.log("Prediction: ", prediction)
 
             expect(prediction).to.equal(1);
         });
