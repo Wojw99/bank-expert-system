@@ -8,8 +8,8 @@
         <h2>Model Information</h2>
         <p>Last Training Parameters:</p>
         <ul>
-          <li>ID: {{ modelInfo.lastParameters.id }}</li>
-          <li>Random State: {{ modelInfo.lastParameters.random_state }}</li>
+          <!-- <li>ID: {{ modelInfo.lastParameters.id }}</li>
+          <li>Random State: {{ modelInfo.lastParameters.random_state }}</li> -->
           <li>N Estimators: {{ modelInfo.lastParameters.n_estimators }}</li>
           <li>Max Depth: {{ modelInfo.lastParameters.max_depth }}</li>
           <li>Min Samples Split: {{ modelInfo.lastParameters.min_samples_split }}</li>
@@ -277,14 +277,11 @@ export default {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            // Include any necessary data in the request body
-          }),
         });
 
         if (response.ok) {
-          // Handle success, if needed
-          console.log('Accept Relearning successful');
+          // Fetch updated model info after accepting relearning
+          await this.fetchModelInfo();
         } else {
           // Handle error
           console.error('Error accepting relearning:', response.statusText);
@@ -347,6 +344,7 @@ form label {
 
 ul {
   list-style-position: inside; /* Align the dots inside the list items */
+  list-style-type: none;
 }
 
 form {
