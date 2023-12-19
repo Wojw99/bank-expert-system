@@ -11,6 +11,9 @@
               <option v-for="option in details.posibilities"
               :key="option" :value="option">{{ option }}</option>
             </select>
+            <p v-if="hasValidationError(columnName)" class="error-text">
+              {{ getValidationError(columnName) }}
+            </p>
           </template>
           <template v-else>
             <input :type="getInputType(details)"
@@ -44,7 +47,6 @@ export default {
     const inputValues = ref({});
     const validationErrors = reactive({});
     const predictionResult = ref(null);
-
     const isFormValid = ref(false);
 
     const getColumnId = (columnName) => `column_${columnName}`;
@@ -59,34 +61,34 @@ export default {
     };
 
     const validateInput = (columnName) => {
-  const value = inputValues.value[columnName];
-  const details = settings.value[columnName];
-  const errors = [];
+      const value = inputValues.value[columnName];
+      const details = settings.value[columnName];
+      const errors = [];
 
-  // Check for empty or non-string inputs
-  if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) {
-    errors.push('Please enter a valid value.');
-  } else if (details && details.type === 'int') {
-    // Check for valid integer values
-    const intValue = parseInt(value, 10);
-    const minValue = details.min;
-    const maxValue = details.max;
+      // Check for empty or non-string inputs
+      if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) {
+        errors.push('Please enter a valid value.');
+      } else if (details && details.type === 'int') {
+        // Check for valid integer values
+        const intValue = parseInt(value, 10);
+        const minValue = details.min;
+        const maxValue = details.max;
 
-    if (Number.isNaN(intValue)) {
-      errors.push('Please enter a valid integer value.');
-    } else {
-      if (minValue !== null && intValue < parseInt(minValue, 10)) {
-        errors.push(`Value should be greater than or equal to ${minValue}.`);
+        if (Number.isNaN(intValue)) {
+          errors.push('Please enter a valid integer value.');
+        } else {
+          if (minValue !== null && intValue < parseInt(minValue, 10)) {
+            errors.push(`Value should be greater than or equal to ${minValue}.`);
+          }
+          if (maxValue !== null && intValue > parseInt(maxValue, 10)) {
+            errors.push(`Value should be less than or equal to ${maxValue}.`);
+          }
+        }
       }
-      if (maxValue !== null && intValue > parseInt(maxValue, 10)) {
-        errors.push(`Value should be less than or equal to ${maxValue}.`);
-      }
-    }
-  }
 
-  // Update validation errors for the current column
-  validationErrors.value[columnName] = errors;
-};
+      // Update validation errors for the current column
+      validationErrors.value[columnName] = errors;
+    };
 
     const hasValidationError = (columnName) => validationErrors.value[columnName]?.length > 0;
 
@@ -131,85 +133,96 @@ export default {
       });
     };
 
+    const showEmptyInputAlerts = () => {
+      // Check for empty inputs and display alerts
+      Object.keys(inputValues.value).forEach((columnName) => {
+        const value = inputValues.value[columnName];
+        const details = settings.value[columnName];
+
+        if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) {
+          validationErrors.value[columnName] = ['Please enter a valid value.'];
+        } else if (details && details.type === 'category' && !value) {
+          validationErrors.value[columnName] = ['Please select a value.'];
+        }
+      });
+    };
+
     const predictLoan = async () => {
-  try {
-    // Validate inputs
-    console.log('predictLoan');
-    validateForm();
+      try {
+        // Validate inputs
+        validateForm();
+        showEmptyInputAlerts();
 
-    // Exit early if there are validation errors or the form is invalid
-    if (!isFormValid.value) {
-      console.log('Form is not valid. Prediction aborted.');
-      return;
-    }
+        // Exit early if there are validation errors or the form is invalid
+        if (!isFormValid.value) {
+          console.log('Form is not valid. Prediction aborted.');
+          return;
+        }
 
-    // Create payload object based on input values
-    const payload = {};
-    Object.keys(inputValues.value).forEach((columnName) => {
-      payload[columnName] = inputValues.value[columnName];
-    });
-
-    const token = store.getters.authToken;
-    const response = await fetch('http://localhost:3000/classification/classify', {
-      method: 'POST', // Change the method to POST
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      predictionResult.value = result.prediction;
-    } else {
-      console.error('Error predicting loan:', response.statusText);
-    }
-  } catch (error) {
-    console.error('Error predicting loan:', error.message);
-  }
-};
-
-    onMounted(async () => {
-  try {
-    // Retrieve the authentication token from the Vuex store
-    const token = store.getters.authToken;
-
-    const response = await fetch('http://localhost:3000/settings/all', {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (response.ok) {
-      const { settings: fetchedSettings } = await response.json();
-
-      // Inicjalizuj settings.value tylko jeśli fetchedSettings nie jest puste
-      if (fetchedSettings && Object.keys(fetchedSettings).length > 0) {
-        settings.value = fetchedSettings;
-
-        // Initialize validationErrors with keys for all columns
-        validationErrors.value = Object.fromEntries(
-          Object.keys(fetchedSettings).map((columnName) => [columnName, []]),
-        );
-
-        // Inicjalizuj inputValues.value dla wszystkich pól
-        Object.keys(settings.value).forEach((columnName) => {
-          inputValues.value[columnName] = null;
+        // Create payload object based on input values
+        const payload = {};
+        Object.keys(inputValues.value).forEach((columnName) => {
+          payload[columnName] = inputValues.value[columnName];
         });
 
-        setDefaultDateValues();
-      } else {
-        console.error('Error fetching settings: Empty response');
+        const token = store.getters.authToken;
+        const response = await fetch('http://localhost:3000/classification/classify', {
+          method: 'POST', // Change the method to POST
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          predictionResult.value = result.prediction;
+        } else {
+          console.error('Error predicting loan:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error predicting loan:', error.message);
       }
-    } else {
-      console.error('Error fetching settings:', response.statusText);
-    }
-  } catch (error) {
-    console.error('Error fetching settings:', error.message);
-  }
-});
+    };
+
+    onMounted(async () => {
+      try {
+        // Retrieve the authentication token from the Vuex store
+        const token = store.getters.authToken;
+
+        const response = await fetch('http://localhost:3000/settings/all', {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const { settings: fetchedSettings } = await response.json();
+
+          // Initialize settings, validationErrors, and inputValues
+          if (fetchedSettings && Object.keys(fetchedSettings).length > 0) {
+            settings.value = fetchedSettings;
+            validationErrors.value = Object.fromEntries(
+              Object.keys(fetchedSettings).map((columnName) => [columnName, []]),
+            );
+
+            Object.keys(settings.value).forEach((columnName) => {
+              inputValues.value[columnName] = null;
+            });
+
+            setDefaultDateValues();
+          } else {
+            console.error('Error fetching settings: Empty response');
+          }
+        } else {
+          console.error('Error fetching settings:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error.message);
+      }
+    });
 
     return {
       settings,
@@ -237,7 +250,6 @@ export default {
 .label {
   margin-right: 10px;
 }
-
 .button-container {
   margin-top: 20px;
 }
@@ -258,9 +270,9 @@ button {
   width: 200px;
 }
 
-/* Add styles for error text */
+/* Adjusted styles for error text */
 .error-text {
   color: red;
-  margin-top: 5px;
+  margin-top: 2px; /* Adjust this value as needed */
 }
 </style>

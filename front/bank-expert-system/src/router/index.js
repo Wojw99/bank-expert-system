@@ -11,9 +11,6 @@ const routes = [
   {
     path: '/about',
     name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
     component() {
       return import(/* webpackChunkName: "about" */ '../views/AboutView.vue');
     },
@@ -25,9 +22,8 @@ const routes = [
       return import(/* webpackChunkName: "training" */ '../views/Training.vue');
     },
     meta: {
-      // Add a meta field specifying the required roles for the Training route
       requiresAuth: true,
-      roles: ['admin'], // Only users with the 'admin' role can access this route
+      roles: ['admin'],
     },
   },
 ];
@@ -51,10 +47,8 @@ router.beforeEach((to, from, next) => {
     } else {
       // Check if the user has the required role for the route
       const requiredRoles = to.meta.roles || [];
-      console.log('requiredRoles:', requiredRoles);
       
       const userRole = store.getters.userRole;
-      console.log('userRole:', userRole);
 
       if (requiredRoles.length === 0 || requiredRoles.includes(userRole)) {
         // User has the required role, proceed to the route

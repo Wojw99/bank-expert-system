@@ -36,7 +36,7 @@ export default {
     return {
       username: '',
       password: '',
-      role: 'user', // Set a default value for the role
+      role: '',
       errorMessage: '',
     };
   },
