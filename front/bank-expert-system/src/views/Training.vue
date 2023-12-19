@@ -24,23 +24,45 @@
       <h2>Modify Hyperparameters</h2>
       <form @submit.prevent="relearnModel">
         <label for="n_estimators">N Estimators:
-          <input type="number" id="n_estimators" v-model="newParameters.n_estimators" />
+          <input type="number" id="n_estimators"
+          v-model="newParameters.n_estimators" @input="handleInput('n_estimators')" />
         </label>
+        <p v-if="hasValidationErrors('n_estimators')" class="error-text">
+          {{ getValidationErrors('n_estimators') }}
+        </p>
+
         <label for="max_depth">Max Depth:
-          <input type="number" id="max_depth" v-model="newParameters.max_depth" />
+          <input type="number" id="max_depth"
+          v-model="newParameters.max_depth" @input="handleInput('max_depth')" />
         </label>
+        <p v-if="hasValidationErrors('max_depth')" class="error-text">
+          {{ getValidationErrors('max_depth') }}
+        </p>
+
         <label for="min_samples_split">Min Samples Split:
-          <input type="number" id="min_samples_split" v-model="newParameters.min_samples_split" />
+          <input type="number" id="min_samples_split"
+          v-model="newParameters.min_samples_split" @input="handleInput('min_samples_split')" />
         </label>
+        <p v-if="hasValidationErrors('min_samples_split')" class="error-text">
+          {{ getValidationErrors('min_samples_split') }}
+        </p>
+
         <label for="min_samples_leaf">Min Samples Leaf:
-          <input type="number" id="min_samples_leaf" v-model="newParameters.min_samples_leaf" />
+          <input type="number" id="min_samples_leaf"
+          v-model="newParameters.min_samples_leaf" @input="handleInput('min_samples_leaf')" />
         </label>
-        <button @click="relearnModel" :disabled="relearningInProgress">
+        <p v-if="hasValidationErrors('min_samples_leaf')" class="error-text">
+          {{ getValidationErrors('min_samples_leaf') }}
+        </p>
+
+        <p v-if="!isFormValid && formErrorMessage" class="error-text">
+          {{ formErrorMessage }}
+        </p>
+        <button @click="relearnModel" :disabled="relearningInProgress || !isFormValid">
           <span v-if="!relearningInProgress">Relearn</span>
           <span v-else>
             <img v-if="relearningInProgress" ref="learningBook"
-            src="@/assets/book.gif"
-            alt="Loading" class="learning-book-img" />
+            src="@/assets/book.gif" alt="Loading" class="learning-book-img" />
           </span>
         </button>
       </form>
@@ -60,6 +82,7 @@
 </template>
 
 <script>
+// import Vue from 'vue';
 import store from '@/store/store';
 
 export default {
@@ -85,9 +108,84 @@ export default {
       },
       newModelInfo: null,
       relearningInProgress: false,
+      hyperparameterValidationErrors: {
+        n_estimators: [],
+        max_depth: [],
+        min_samples_split: [],
+        min_samples_leaf: [],
+      },
+      hyperparameterConstraints: {
+        // Define constraints for each hyperparameter
+        n_estimators: {
+          min: 0, // Set minimum value
+          max: 100, // Set maximum value
+        },
+        max_depth: {
+          min: 0,
+          max: 10,
+        },
+        min_samples_split: {
+          min: 0,
+          max: 100,
+        },
+        min_samples_leaf: {
+          min: 0,
+          max: 100,
+        },
+      },
+      isFormValid: true,
+      formErrorMessage: '',
     };
   },
   methods: {
+    validateForm() {
+      // Check the overall validity of the form
+      this.isFormValid = !this.hasValidationErrors();
+      // Set an error message if the form is not valid
+      if (!this.isFormValid) {
+        this.formErrorMessage = 'Please correct the form errors before relearning.';
+      } else {
+        // Clear the error message if the form is valid
+        this.formErrorMessage = '';
+      }
+    },
+    handleInput(columnName) {
+      this.validateHyperparameter(columnName);
+    },
+    validateHyperparameters() {
+      // Validate each hyperparameter
+      this.validateHyperparameter('n_estimators');
+      this.validateHyperparameter('max_depth');
+      this.validateHyperparameter('min_samples_split');
+      this.validateHyperparameter('min_samples_leaf');
+    },
+    validateHyperparameter(hyperparameter) {
+      const value = this.newParameters && this.newParameters[hyperparameter];
+      const constraints = this.hyperparameterConstraints[hyperparameter];
+
+      const errors = [];
+
+      if (
+        value === null || value === undefined || Number.isNaN(value)
+        || value < constraints.min || value > constraints.max
+      ) {
+        errors.push(`Invalid value for ${hyperparameter}`);
+      }
+
+      // Update validation errors for the current hyperparameter
+      this.hyperparameterValidationErrors = {
+        ...this.hyperparameterValidationErrors,
+        [hyperparameter]: errors,
+      };
+    },
+
+    getValidationErrors(hyperparameter) {
+      return this.hyperparameterValidationErrors[hyperparameter].join(' ');
+    },
+
+    hasValidationErrors(hyperparameter) {
+      return this.hyperparameterValidationErrors[hyperparameter].length > 0;
+    },
     scrollToBook() {
       // Wait for 100ms before attempting to scroll
       setTimeout(() => {
@@ -115,7 +213,25 @@ export default {
     },
     async relearnModel() {
       try {
-        // Disable the "Relearn" button
+        // Validate hyperparameters
+        this.validateHyperparameters();
+
+        // Clear the error message before attempting to relearn
+        this.formErrorMessage = '';
+        if (
+          this.hasValidationErrors('n_estimators')
+          || this.hasValidationErrors('max_depth')
+          || this.hasValidationErrors('min_samples_split')
+          || this.hasValidationErrors('min_samples_leaf')
+          || !this.newParameters.n_estimators
+          || !this.newParameters.max_depth
+          || !this.newParameters.min_samples_split
+          || !this.newParameters.min_samples_leaf
+        ) {
+          return; // Exit early if there are validation errors or empty inputs
+        }
+
+        // Disable the "Relearn" button and scroll to the loading book
         this.relearningInProgress = true;
         this.scrollToBook();
 
@@ -142,9 +258,11 @@ export default {
           this.newModelInfo = await response.json();
         } else {
           console.error('Error relearning model:', response.statusText);
+          this.formErrorMessage = 'Error relearning model. Please try again.';
         }
       } catch (error) {
         console.error('Error relearning model:', error.message);
+        this.formErrorMessage = 'Error relearning model. Please try again.';
       } finally {
         // Re-enable the "Relearn" button after the relearning process is complete
         this.relearningInProgress = false;
@@ -266,5 +384,10 @@ form label {
   display: inline-block;
   font-size: 16px;
   cursor: pointer;
+}
+.error-text {
+  margin: 5px 0;
+  font-weight: bold;
+  color: red;
 }
 </style>

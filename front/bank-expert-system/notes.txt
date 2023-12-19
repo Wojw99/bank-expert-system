@@ -1,11 +1,11 @@
-sprawdzanie czy user juz istnieje podczas rejestracji
 
-zastosowac min/max dla hiperparametrów 
+miec z tylu glowy ewentualne testy jednostkowych/mutacyjnych/funkcjonalnych 
+i ich uzasadnienie - pending 
 
-miec z tylu glowy ewentualne testy jednostkowych/mutacyjnych/funkcjonalnych i ich uzasadnienie
+szyfrowanie - pending
 
-szyfrowanie 
+sprawdzanie czy user juz istnieje podczas rejestracji - muszę dostawać taką zwrotkę
 
-rozpoznawanie roli usera
+rozpoznawanie roli usera - nie dostaję roli w responsach
 
-dokonczyc predykcje
+dokonczyc predykcje - dostaję error 500 i jej walidację
