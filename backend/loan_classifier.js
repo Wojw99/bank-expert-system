@@ -133,7 +133,7 @@ loanClassifier.acceptRelearning = async function() {
 }
 
 loanClassifier.validateSettingsNumber = function(paramKey, param, setting) {
-  if(!Number.isInteger(param)) {
+  if(!Number.isInteger(parseFloat(param))) {
     throw new ValidationError(`${paramKey} must be instance of Int`)
   }
   if(setting.max) {
@@ -170,11 +170,11 @@ loanClassifier.validateClassificationParams = function(reqParameters) {
 loanClassifier.classify = async function(reqParameters) {
     return new Promise((resolve, reject) => {
 
-    // try{
-    //   loanClassifier.validateClassificationParams(reqParameters)
-    // } catch(error) {
-    //   reject(error)
-    // }
+    try{
+      loanClassifier.validateClassificationParams(reqParameters)
+    } catch(error) {
+      reject(error)
+    }
 
     const pythonScriptPath = 'classify.py';
 

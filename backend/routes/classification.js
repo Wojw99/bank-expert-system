@@ -18,9 +18,6 @@ router.post('/acceptRelearning', auth.authenticateJWT, async (req, res) => {
 router.get('/classify', auth.authenticateJWT, async (req, res) => {
   var hyperParams = req.query
 
-  console.log("DUPA", req.query)
-  console.log("DUPA", hyperParams)
-
   try {
     var prediction = await loanClassifier.classify(hyperParams)
     return res.json({prediction: prediction});
