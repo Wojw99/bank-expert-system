@@ -5,32 +5,28 @@ const accessTokenSecret = require('../config');
 const strings = require('../strings')
 const loanClassifier = require('../loan_classifier.js')
 const auth = require('./auth')
-  
+const ValidationError = require('../validation_error')  
+
 router.post('/acceptRelearning', auth.authenticateJWT, async (req, res) => {
   if(req.user && req.user.role !== 'admin') {
-    return res.status(401).json({ message : strings.unauthorized}).send()
+    return res.status(401).send(strings.unauthorized)
   }
   await loanClassifier.acceptRelearning()
   return res.json({"Status": "updated"});
 });
 
 router.get('/classify', auth.authenticateJWT, async (req, res) => {
-  var { age, job, balance, day, month, duration, education } = req.body;
+  var hyperParams = req.body;
 
   try {
-    var prediction = await loanClassifier.classify(
-      age = age,
-      job = job,
-      balance = balance,
-      day = day,
-      month = month,
-      duration = duration, 
-      education = education
-    )
+    var prediction = await loanClassifier.classify(hyperParams)
     return res.json({prediction: prediction});
   } catch (error) {
-    console.log(error)
-    res.status(500).send('Internal Server Error');
+    if(error instanceof ValidationError) {
+      res.status(400).send(error.message);
+    } else {
+      res.status(500).send(error.message);
+    }
   }
 });
 
@@ -38,22 +34,19 @@ router.post('/relearn', auth.authenticateJWT, async (req, res) => {
   const { user } = req.user;
 
   if(req.user && req.user.role !== 'admin') {
-    return res.status(401).json({ message : strings.unauthorized}).send()
+    return res.status(401).send(strings.unauthorized)
   }
 
-  var { random_state, n_estimators, max_depth, min_samples_split, min_samples_leaf } = req.body;
-
   try {
-    var accuracy = await loanClassifier.relearn(
-      random_state = random_state,
-      n_estimators = n_estimators,
-      max_depth = max_depth,
-      min_samples_split = min_samples_split, 
-      min_samples_leaf = min_samples_leaf,
-    )
+    const reqHyperparameters = req.body;
+    const accuracy = await loanClassifier.relearn(reqHyperparameters)
     return res.json({accuracy: accuracy});
   } catch (error) {
-    res.status(500).send('Internal Server Error');
+    if(error instanceof ValidationError) {
+      res.status(400).send(error.message);
+    } else {
+      res.status(500).send(error.message);
+    }
   }
 });
 
