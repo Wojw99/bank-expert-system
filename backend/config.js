@@ -18,7 +18,19 @@ const config = {
         'primary' : 0,
         'secondary' : 1,
         'tertiary' : 2,
-        'unknown' : 3
+        'unknown' : 3,
+        'may' : 5, 
+        'jun' : 6, 
+        'jul' : 7, 
+        'aug' : 8, 
+        'oct' : 10, 
+        'nov' : 11, 
+        'dec' : 12, 
+        'jan' : 1, 
+        'feb' : 2, 
+        'mar' : 3, 
+        'apr' : 4, 
+        'sep' : 9
     },
     settings : {
         'age' : {
