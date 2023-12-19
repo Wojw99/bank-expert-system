@@ -82,7 +82,6 @@
 </template>
 
 <script>
-// import Vue from 'vue';
 import store from '@/store/store';
 
 export default {
@@ -115,10 +114,9 @@ export default {
         min_samples_leaf: [],
       },
       hyperparameterConstraints: {
-        // Define constraints for each hyperparameter
         n_estimators: {
-          min: 0, // Set minimum value
-          max: 100, // Set maximum value
+          min: 0, 
+          max: 100,
         },
         max_depth: {
           min: 0,
@@ -139,13 +137,10 @@ export default {
   },
   methods: {
     validateForm() {
-      // Check the overall validity of the form
       this.isFormValid = !this.hasValidationErrors();
-      // Set an error message if the form is not valid
       if (!this.isFormValid) {
         this.formErrorMessage = 'Please correct the form errors before relearning.';
       } else {
-        // Clear the error message if the form is valid
         this.formErrorMessage = '';
       }
     },
@@ -189,7 +184,6 @@ export default {
     scrollToBook() {
       // Wait for 100ms before attempting to scroll
       setTimeout(() => {
-        // Use object destructuring to access the ref
         const { learningBook } = this.$refs;
         if (learningBook) {
           learningBook.scrollIntoView({ behavior: 'smooth' });
@@ -213,10 +207,8 @@ export default {
     },
     async relearnModel() {
       try {
-        // Validate hyperparameters
         this.validateHyperparameters();
 
-        // Clear the error message before attempting to relearn
         this.formErrorMessage = '';
         if (
           this.hasValidationErrors('n_estimators')
@@ -231,7 +223,6 @@ export default {
           return; // Exit early if there are validation errors or empty inputs
         }
 
-        // Disable the "Relearn" button and scroll to the loading book
         this.relearningInProgress = true;
         this.scrollToBook();
 
@@ -283,7 +274,6 @@ export default {
           // Fetch updated model info after accepting relearning
           await this.fetchModelInfo();
         } else {
-          // Handle error
           console.error('Error accepting relearning:', response.statusText);
         }
         this.newModelInfo = null;

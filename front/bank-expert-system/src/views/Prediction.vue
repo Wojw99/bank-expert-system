@@ -28,9 +28,9 @@
     </div>
     <div class="button-container">
       <button @click="predictLoan">Predict</button>
+      <button @click="clearInputs">Clear All</button>
       <p v-if="predictionResult === 1">Customer should get a loan.</p>
       <p v-if="predictionResult === 0">Customer should not get a loan.</p>
-      <button @click="clearInputs">Clear All</button>
     </div>
   </div>
 </div>
@@ -223,7 +223,9 @@ export default {
 
     if (response.ok) {
       const result = await response.json();
-      predictionResult.value = result.prediction;
+      predictionResult.value = result.prediction[0];
+      console.log(result);
+      console.log(result.prediction);
     } else {
       console.error('Error predicting loan:', response.statusText);
     }

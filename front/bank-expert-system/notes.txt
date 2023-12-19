@@ -4,4 +4,4 @@ i ich uzasadnienie - pending
 
 szyfrowanie - pending
 
-dokonczyc predykcje - dostaję error 500 i jej walidację
+walidacja dzien miesiąca w predykcji
