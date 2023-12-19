@@ -11,7 +11,7 @@ describe('POST /login', () => {
     it('should return a JWT token on successful login', (done) => {
         chai.request(app)
         .post('/auth/login')
-        .send({ username: 'admin', password: 'admin123' })
+        .send({ username: 'admin', password: 'admin123', role: 'admin' })
         .end((err, res) => {
           expect(res).to.have.status(200);
           expect(res.body).to.have.property('token');
@@ -63,7 +63,7 @@ describe('POST /register', () => {
     it('should register a new user and return 201 status', (done) => {
       chai.request(app)
         .post('/auth/register')
-        .send({ username: testUser, password: testPass })
+        .send({ username: testUser, password: testPass, role : strings.userRole })
         .end((err, res) => {
           expect(res).to.have.status(201);
           done();
@@ -73,12 +73,25 @@ describe('POST /register', () => {
     it('should return 400 if user already exists', (done) => {
       chai.request(app)
         .post('/auth/register')
-        .send({ username: testUser, password: testPass })
+        .send({ username: testUser, password: testPass, role : strings.userRole })
         .end((err, res) => {
           expect(res).to.have.status(400);
           done();
         });
     });
+
+
+    it('should register a new admin and return 201 status', (done) => {
+      chai.request(app)
+        .post('/auth/register')
+        .send({ username: testUser+"admin", password: testPass+"admin", role : strings.adminRole })
+        .end((err, res) => {
+          expect(res).to.have.status(201);
+          done();
+        });
+    });
+    
+
   });
   
 
@@ -103,9 +116,5 @@ describe('POST /register', () => {
         done()
       })
     });
-
-
-
-    
   });
   

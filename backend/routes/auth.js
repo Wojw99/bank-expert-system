@@ -29,8 +29,9 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/register', async (req, res) => {
-    const { username, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const { username, password, role } = req.body;
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     database.getAllUsersCallback((error, users) => {
       if (users && users.find(user => user.username === username)) {
@@ -38,8 +39,8 @@ router.post('/register', async (req, res) => {
       } else if (error || users === null) {
         return res.status(500).send(strings.internalError);
       }
-      database.addUser(hashedPassword, username, strings.userRole)
-      return res.status(201).json({ role: strings.userRole });  
+      database.addUser(hashedPassword, username, role)
+      return res.status(201).json({ role: role });  
     })
 });
 
@@ -51,7 +52,7 @@ router.authenticateJWT = (req, res, next) => {
 
       jwt.verify(token, accessTokenSecret, (err, user) => {
           if (err) {
-              return res.status(403).send(strings.authTokenIvalid).send();
+              return res.status(403).send(strings.authTokenIvalid);
           }
 
           req.user = user;

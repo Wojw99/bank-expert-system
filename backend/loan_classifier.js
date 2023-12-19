@@ -45,7 +45,7 @@ loanClassifier.validateRelearningParams = function(reqHyperparameters) {
   if(min_samples_split === null || min_samples_split === undefined) {
     throw new ValidationError('min_samples_split cannot be null.')
   } 
-  if(min_samples_split <= 1) {
+  if(min_samples_split <= 0) {
     throw new ValidationError('min_samples_split must be greater than 0.')
   }
 
@@ -53,7 +53,7 @@ loanClassifier.validateRelearningParams = function(reqHyperparameters) {
   if(min_samples_leaf === null || min_samples_leaf === undefined) {
     throw new ValidationError('min_samples_leaf cannot be null.')
   }
-  if(min_samples_leaf <= 1) {
+  if(min_samples_leaf <= 0) {
     throw new ValidationError('min_samples_leaf must be greater than 0.')
   }
 }
@@ -189,11 +189,11 @@ loanClassifier.classify = async function(reqParameters) {
       this.hyperparameters["min_samples_leaf"],
       reqParameters.age,
       jobNum,
+      eduNum,
       reqParameters.balance,
       reqParameters.day,
       monthNum,
-      reqParameters.duration,
-      eduNum
+      reqParameters.duration
     ];
     
     const pythonProcess = spawn('python', [pythonScriptPath, JSON.stringify(inputData)]);
@@ -204,7 +204,7 @@ loanClassifier.classify = async function(reqParameters) {
     pythonProcess.stdout.on('data', (data) => {
         console.log(`${strings.pythonScriptOutput} ${data}`);
         const parsed = JSON.parse(data);
-        resolve(parsed);
+        resolve(parsed.accuracy);
     });
       
     pythonProcess.on('close', (code) => {
