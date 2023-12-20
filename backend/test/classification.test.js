@@ -52,7 +52,7 @@ describe('Classification', () => {
             chai.request(app)
             .get('/classification/classify')
             .set('Authorization', `Bearer ${token}`)
-            .send(params)
+            .query(params)
             .end((err, resp) => {
                 const prediction = resp.body.prediction
                 
