@@ -115,7 +115,7 @@ export default {
       },
       hyperparameterConstraints: {
         n_estimators: {
-          min: 0, 
+          min: 0,
           max: 100,
         },
         max_depth: {
@@ -255,7 +255,6 @@ export default {
         console.error('Error relearning model:', error.message);
         this.formErrorMessage = 'Error relearning model. Please try again.';
       } finally {
-        // Re-enable the "Relearn" button after the relearning process is complete
         this.relearningInProgress = false;
       }
     },
