@@ -106,6 +106,22 @@ export async function relearnModelAPI(token, parameters) {
   }
 }
 
+export async function acceptRelearningAPI(token) {
+  try {
+    const response = await fetch('http://localhost:3000/classification/acceptRelearning', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response;
+  } catch (error) {
+    throw new Error(`Error accepting relearning: ${error.message}`);
+  }
+}
+
 export default {
   name: 'TrainingPanel',
   data() {
@@ -227,6 +243,23 @@ export default {
         console.error('Error fetching model info:', error.message);
       }
     },
+    async acceptRelearning() {
+      try {
+        const token = this.$store.getters.authToken;
+        const response = await acceptRelearningAPI(token);
+
+        if (response.ok) {
+          // Fetch updated model info after accepting relearning
+          await this.fetchModelInfo();
+        } else {
+          console.error('Error accepting relearning:', response.statusText);
+        }
+        this.newModelInfo = null;
+        this.clearInputs();
+      } catch (error) {
+        console.error('Error accepting relearning:', error.message);
+      }
+    },
     async relearnModel() {
       try {
         this.validateHyperparameters();
@@ -268,29 +301,6 @@ export default {
         this.formErrorMessage = error.message;
       } finally {
         this.relearningInProgress = false;
-      }
-    },
-    async acceptRelearning() {
-      try {
-        const token = this.$store.getters.authToken;
-        const response = await fetch('http://localhost:3000/classification/acceptRelearning', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          // Fetch updated model info after accepting relearning
-          await this.fetchModelInfo();
-        } else {
-          console.error('Error accepting relearning:', response.statusText);
-        }
-        this.newModelInfo = null;
-        this.clearInputs();
-      } catch (error) {
-        console.error('Error accepting relearning:', error.message);
       }
     },
     rejectRelearning() {
