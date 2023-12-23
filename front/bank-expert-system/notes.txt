@@ -1,7 +1,0 @@
-
-miec z tylu glowy ewentualne testy jednostkowych/mutacyjnych/funkcjonalnych 
-i ich uzasadnienie - pending 
-
-szyfrowanie - pending
-
-walidacja dzien miesiąca w predykcji

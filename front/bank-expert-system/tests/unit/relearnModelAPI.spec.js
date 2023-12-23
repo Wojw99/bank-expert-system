@@ -8,7 +8,6 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-    // Clean up the mock after each test
     fetch.resetMocks();
 });
 
