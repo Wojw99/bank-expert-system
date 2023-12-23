@@ -84,6 +84,28 @@
 <script>
 import store from '@/store/store';
 
+export async function relearnModelAPI(token, parameters) {
+  try {
+    const response = await fetch('http://localhost:3000/classification/relearn', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(parameters),
+    });
+
+    if (response.ok) {
+      return await response.json();
+    }
+    console.error('Error relearning model:', response.statusText);
+    throw new Error('Error relearning model. Please try again.');
+  } catch (error) {
+    console.error('Error relearning model:', error.message);
+    throw new Error('Error relearning model. Please try again.');
+  }
+}
+
 export default {
   name: 'TrainingPanel',
   data() {
@@ -227,33 +249,23 @@ export default {
         this.scrollToBook();
 
         const token = this.$store.getters.authToken;
-        const response = await fetch('http://localhost:3000/classification/relearn', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            n_estimators: this.newParameters.n_estimators,
-            max_depth: this.newParameters.max_depth,
-            min_samples_split: this.newParameters.min_samples_split,
-            min_samples_leaf: this.newParameters.min_samples_leaf,
-          }),
-        });
+        const parameters = {
+          n_estimators: this.newParameters.n_estimators,
+          max_depth: this.newParameters.max_depth,
+          min_samples_split: this.newParameters.min_samples_split,
+          min_samples_leaf: this.newParameters.min_samples_leaf,
+        };
 
-        if (response.ok) {
-          // Fetch updated model info after relearning
-          await this.fetchModelInfo();
+        // Call the extracted API function
+        const response = await relearnModelAPI(token, parameters);
 
-          // Set newModelInfo with the response data
-          this.newModelInfo = await response.json();
-        } else {
-          console.error('Error relearning model:', response.statusText);
-          this.formErrorMessage = 'Error relearning model. Please try again.';
-        }
+        // Fetch updated model info after relearning
+        await this.fetchModelInfo();
+
+        // Set newModelInfo with the response data
+        this.newModelInfo = response;
       } catch (error) {
-        console.error('Error relearning model:', error.message);
-        this.formErrorMessage = 'Error relearning model. Please try again.';
+        this.formErrorMessage = error.message;
       } finally {
         this.relearningInProgress = false;
       }

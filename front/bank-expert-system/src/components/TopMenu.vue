@@ -13,7 +13,13 @@
             <router-link v-if="showTrainingLink" to="/training">Training</router-link>
 
             <!-- Logout button -->
-            <button v-if="$store.getters.isAuthenticated" @click="logout">Log Out</button>
+            <button
+                v-if="$store.getters.isAuthenticated"
+                @click="logout"
+                ref="logoutButton"
+            >
+                Log Out
+            </button>
         </nav>
     </div>
 </template>

@@ -1,8 +1,8 @@
 # Use an official Node.js image as a base image
-FROM node:20.10.0 as build
+FROM node:20 as backend
 
 # Set the working directory inside the container
-WORKDIR /usr/src/app
+WORKDIR /app
 
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./

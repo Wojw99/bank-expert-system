@@ -1,32 +1,34 @@
-# Use an official Node.js image as a base image
-FROM node:20.10.0 as build
+# Frontend Dockerfile
+FROM node:20 AS build
 
-# Set the working directory inside the container
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
+# Use a different Debian package mirror
+# RUN echo "deb http://mirrors.umd.edu/debian/ bullseye main" > /etc/apt/sources.list
+
+# Install npm with --fix-missing
+RUN apt-get update --fix-missing && apt-get install -y npm
+
+
 COPY package*.json ./
 
-# Optional: Clean npm cache
-RUN npm cache clean --force
-
-# Install frontend dependencies with additional options
 RUN npm install
 
-# Copy the rest of the frontend application code to the working directory
 COPY . .
 
-# Build the frontend application
 RUN npm run build
 
 # Use a lightweight Nginx image as the final image
-FROM nginx:alpine
+# FROM nginx:alpine
 
 # Copy the built frontend files to the Nginx web server directory
-COPY --from=build /usr/src/app/build/ /usr/share/nginx/html
+# COPY --from=build /usr/src/app/build/ /usr/share/nginx/html
+
+# Copy custom Nginx configuration if needed
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose the default Nginx port
-EXPOSE 80
+EXPOSE 8080
 
 # Command to start Nginx
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npm", "start"]
